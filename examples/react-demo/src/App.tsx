@@ -28,7 +28,8 @@ function App() {
     provider: createS3Provider({
       signingUrl: 'http://localhost:3001/api/s3/sign',
       multipartUrl: 'http://localhost:3001/api/s3/multipart',
-      multipartThreshold: 100 * 1024 * 1024, // 100MB (default, won't trigger easily)
+      multipartThreshold: 5 * 1024 * 1024, // 5MB - triggers multipart easily
+      chunkSize: 5 * 1024 * 1024, // 5MB chunks
     }),
     validation: {
       maxFileSize: 10 * 1024 * 1024 * 1024, // 10GB
@@ -36,17 +37,66 @@ function App() {
     },
   });
 
-  // Public API (no auth) - Multipart upload example
+  // Public API (no auth) - Multipart upload example with custom signers
   const publicMultipartUpload = useUpload({
     provider: createS3Provider({
+      // Single upload fallback
       signingUrl: 'http://localhost:3001/api/s3/sign',
-      multipartUrl: 'http://localhost:3001/api/s3/multipart',
+      // Custom multipart signers
+      multipartSigner: {
+        initiate: async (_file, params) => {
+          const response = await fetch('http://localhost:3001/api/s3/multipart/initiate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fileName: params.fileName,
+              contentType: params.contentType,
+              fileSize: params.fileSize,
+            }),
+          });
+          return response.json();
+        },
+        signPart: async (_file, params) => {
+          const response = await fetch('http://localhost:3001/api/s3/multipart/sign-part', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              uploadId: params.uploadId,
+              key: params.key,
+              partNumber: params.partNumber,
+            }),
+          });
+          return response.json();
+        },
+        complete: async (_file, params) => {
+          const response = await fetch('http://localhost:3001/api/s3/multipart/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              uploadId: params.uploadId,
+              key: params.key,
+              parts: params.parts,
+            }),
+          });
+          return response.json();
+        },
+        abort: async (_file, params) => {
+          await fetch('http://localhost:3001/api/s3/multipart/abort', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              uploadId: params.uploadId,
+              key: params.key,
+            }),
+          });
+        },
+      },
       multipartThreshold: 5 * 1024 * 1024, // 5MB - triggers multipart easily
       chunkSize: 5 * 1024 * 1024, // 5MB chunks
     }),
     validation: {
       maxFileSize: 10 * 1024 * 1024 * 1024, // 10GB
-      allowedTypes: ['*'],
+      allowedTypes: ['image/*'],
     },
   });
 
