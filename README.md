@@ -1,10 +1,10 @@
-# S3Up
+# @awesome-s3-uploader
 
 Modern, framework-agnostic S3 file upload library with multipart support. Built to replace the abandoned `react-s3-uploader` package.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Why S3Up?
+## Why @awesome-s3-uploader?
 
 - **Framework-agnostic core** - Use with React, Vue, Svelte, or vanilla JS
 - **Zero dependencies** - Core package has no runtime dependencies
@@ -129,7 +129,7 @@ const uploader = createUploader({
 
 ## Documentation
 
-Full documentation available at [https://YOUR_ORG.github.io/s3up](https://YOUR_ORG.github.io/s3up)
+Full documentation available at [https://YOUR_ORG.github.io/@awesome-s3-uploader](https://YOUR_ORG.github.io/@awesome-s3-uploader)
 
 ## Examples
 
@@ -162,4 +162,4 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) for development guidelines.
 
 ## License
 
-MIT © S3Up Contributors
+MIT © @awesome-s3-uploader Contributors

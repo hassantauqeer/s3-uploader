@@ -6,14 +6,14 @@ Build a modern, framework-agnostic S3 file upload library to replace the abandon
 
 ### Package Names
 
-- `@s3up/core` — Framework-agnostic upload engine (zero dependencies)
-- `@s3up/react` — React hooks and components (peerDep: react >=18)
+- `@awesome-s3-uploader/core` — Framework-agnostic upload engine (zero dependencies)
+- `@awesome-s3-uploader/react` — React hooks and components (peerDep: react >=18)
 - Documentation site — Docusaurus deployed to GitHub Pages
 
 ### Guiding Principles
 
 - TypeScript-first: every package ships `.d.ts` and has strict type checking
-- Zero runtime dependencies in `@s3up/core` (only devDependencies for testing/building)
+- Zero runtime dependencies in `@awesome-s3-uploader/core` (only devDependencies for testing/building)
 - Headless-first: core logic is fully decoupled from UI
 - Provider pattern: pluggable backends (S3, mock, MinIO, future: GCS, R2, Azure)
 - Docs-as-code: documentation lives in the monorepo and deploys automatically
@@ -25,7 +25,7 @@ Build a modern, framework-agnostic S3 file upload library to replace the abandon
 ### 1.1 Repository Initialization
 
 ```
-s3up/
+@awesome-s3-uploader/
 ├── .github/
 │   ├── workflows/
 │   │   ├── ci.yml                  # Lint + test + build on PR
@@ -37,13 +37,13 @@ s3up/
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   └── CONTRIBUTING.md
 ├── packages/
-│   ├── core/                       # @s3up/core
+│   ├── core/                       # @awesome-s3-uploader/core
 │   │   ├── src/
 │   │   ├── tests/
 │   │   ├── package.json
 │   │   ├── tsconfig.json
 │   │   └── tsup.config.ts
-│   └── react/                      # @s3up/react
+│   └── react/                      # @awesome-s3-uploader/react
 │       ├── src/
 │       ├── tests/
 │       ├── package.json
@@ -89,7 +89,7 @@ packages:
 **package.json (root):**
 ```json
 {
-  "name": "s3up-monorepo",
+  "name": "@awesome-s3-uploader-monorepo",
   "private": true,
   "scripts": {
     "build": "pnpm -r --filter './packages/*' run build",
@@ -171,7 +171,7 @@ Use `@changesets/cli` for versioning and changelogs:
 
 ---
 
-## Phase 2: @s3up/core — The Upload Engine
+## Phase 2: @awesome-s3-uploader/core — The Upload Engine
 
 This is the heart of the library. Zero dependencies, pure TypeScript.
 
@@ -838,11 +838,11 @@ export type {
 } from './types';
 ```
 
-### 2.12 package.json (@s3up/core)
+### 2.12 package.json (@awesome-s3-uploader/core)
 
 ```json
 {
-  "name": "@s3up/core",
+  "name": "@awesome-s3-uploader/core",
   "version": "0.1.0",
   "description": "Framework-agnostic S3 file upload engine with multipart support",
   "license": "MIT",
@@ -859,7 +859,7 @@ export type {
   "files": ["dist", "README.md", "LICENSE"],
   "sideEffects": false,
   "keywords": ["s3", "upload", "aws", "multipart", "file-upload", "presigned-url"],
-  "repository": { "type": "git", "url": "https://github.com/YOUR_ORG/s3up", "directory": "packages/core" },
+  "repository": { "type": "git", "url": "https://github.com/YOUR_ORG/@awesome-s3-uploader", "directory": "packages/core" },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -881,7 +881,7 @@ CRITICAL: Zero `dependencies`. Only `devDependencies`.
 
 ---
 
-## Phase 3: @s3up/react — React Bindings
+## Phase 3: @awesome-s3-uploader/react — React Bindings
 
 ### 3.1 Source File Structure
 
@@ -1096,11 +1096,11 @@ export const UploaderProvider: React.FC<{
 export function useUploaderContext(): UseUploaderReturn;
 ```
 
-### 3.7 package.json (@s3up/react)
+### 3.7 package.json (@awesome-s3-uploader/react)
 
 ```json
 {
-  "name": "@s3up/react",
+  "name": "@awesome-s3-uploader/react",
   "version": "0.1.0",
   "description": "React hooks and components for S3 file uploads",
   "license": "MIT",
@@ -1117,7 +1117,7 @@ export function useUploaderContext(): UseUploaderReturn;
   "files": ["dist", "README.md", "LICENSE"],
   "sideEffects": false,
   "keywords": ["react", "s3", "upload", "hooks", "drag-drop", "file-upload"],
-  "repository": { "type": "git", "url": "https://github.com/YOUR_ORG/s3up", "directory": "packages/react" },
+  "repository": { "type": "git", "url": "https://github.com/YOUR_ORG/@awesome-s3-uploader", "directory": "packages/react" },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -1127,7 +1127,7 @@ export function useUploaderContext(): UseUploaderReturn;
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@s3up/core": "workspace:*"
+    "@awesome-s3-uploader/core": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
@@ -1153,7 +1153,7 @@ CRITICAL: `react` and `react-dom` are `peerDependencies` only. They also appear 
 
 ## Phase 4: Testing Strategy
 
-### 4.1 Unit Tests (@s3up/core)
+### 4.1 Unit Tests (@awesome-s3-uploader/core)
 
 ```
 packages/core/tests/
@@ -1191,7 +1191,7 @@ Key test scenarios for upload-manager:
 - Progress: speed calculation, ETA calculation
 - Filename scrubbing: special characters, unicode, path traversal
 
-### 4.2 Unit Tests (@s3up/react)
+### 4.2 Unit Tests (@awesome-s3-uploader/react)
 
 ```
 packages/react/tests/
@@ -1353,7 +1353,7 @@ examples/vanilla-js/
 └── README.md
 ```
 
-Demonstrates using `@s3up/core` directly with vanilla DOM manipulation.
+Demonstrates using `@awesome-s3-uploader/core` directly with vanilla DOM manipulation.
 
 ### 5.5 examples/server/node-express
 
@@ -1474,12 +1474,12 @@ docs/
 import type { Config } from '@docusaurus/types';
 
 const config: Config = {
-  title: 'S3Up',
+  title: '@awesome-s3-uploader',
   tagline: 'Modern S3 file uploads for every JavaScript framework',
   url: 'https://YOUR_ORG.github.io',
-  baseUrl: '/s3up/',
+  baseUrl: '/@awesome-s3-uploader/',
   organizationName: 'YOUR_ORG',
-  projectName: 's3up',
+  projectName: '@awesome-s3-uploader',
   deploymentBranch: 'gh-pages',
   trailingSlash: false,
 
@@ -1489,7 +1489,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/YOUR_ORG/s3up/tree/main/docs/',
+          editUrl: 'https://github.com/YOUR_ORG/@awesome-s3-uploader/tree/main/docs/',
         },
         blog: false,
         theme: {
@@ -1501,10 +1501,10 @@ const config: Config = {
 
   themeConfig: {
     navbar: {
-      title: 'S3Up',
+      title: '@awesome-s3-uploader',
       items: [
         { type: 'docSidebar', sidebarId: 'docs', position: 'left', label: 'Docs' },
-        { href: 'https://github.com/YOUR_ORG/s3up', label: 'GitHub', position: 'right' },
+        { href: 'https://github.com/YOUR_ORG/@awesome-s3-uploader', label: 'GitHub', position: 'right' },
       ],
     },
     footer: {
@@ -1520,12 +1520,12 @@ const config: Config = {
         {
           title: 'Community',
           items: [
-            { label: 'GitHub Discussions', href: 'https://github.com/YOUR_ORG/s3up/discussions' },
-            { label: 'Issues', href: 'https://github.com/YOUR_ORG/s3up/issues' },
+            { label: 'GitHub Discussions', href: 'https://github.com/YOUR_ORG/@awesome-s3-uploader/discussions' },
+            { label: 'Issues', href: 'https://github.com/YOUR_ORG/@awesome-s3-uploader/issues' },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} S3Up Contributors. MIT License.`,
+      copyright: `Copyright © ${new Date().getFullYear()} @awesome-s3-uploader Contributors. MIT License.`,
     },
     prism: {
       theme: require('prism-react-renderer').themes.github,
@@ -1536,7 +1536,7 @@ const config: Config = {
       // Fill in after approval. Site works without it (no search).
       appId: 'YOUR_APP_ID',
       apiKey: 'YOUR_SEARCH_API_KEY',
-      indexName: 's3up',
+      indexName: '@awesome-s3-uploader',
     },
   },
 };
@@ -1723,7 +1723,7 @@ jobs:
 Must include:
 - Badges: npm version, CI status, license, bundle size
 - One-sentence description
-- "Why S3Up?" section (comparison to react-s3-uploader)
+- "Why @awesome-s3-uploader?" section (comparison to react-s3-uploader)
 - Quick start code snippet (5 lines, mock mode)
 - Feature list
 - Links to docs, examples, contributing guide
@@ -1766,37 +1766,37 @@ Execute in this exact order. Each step should result in working, testable code b
 ### Step 1: Scaffold the monorepo
 Set up the root project structure, pnpm workspace, tsconfig, eslint, prettier. Verify `pnpm install` and `pnpm build` work (even if packages are empty stubs).
 
-### Step 2: Build @s3up/core types and event emitter
+### Step 2: Build @awesome-s3-uploader/core types and event emitter
 Create `types.ts` with all interfaces and `utils/event-emitter.ts`. Write tests for the event emitter.
 
-### Step 3: Build @s3up/core utilities
+### Step 3: Build @awesome-s3-uploader/core utilities
 Implement `filename.ts`, `content-type.ts`, `unique-id.ts`, `abort-controller.ts`. Write tests.
 
-### Step 4: Build @s3up/core validators
+### Step 4: Build @awesome-s3-uploader/core validators
 Implement `file-validator.ts` and `image-validator.ts`. Write tests covering all validation rules.
 
-### Step 5: Build @s3up/core retry strategy
+### Step 5: Build @awesome-s3-uploader/core retry strategy
 Implement `exponential-backoff.ts`. Write tests with fake timers.
 
-### Step 6: Build @s3up/core mock provider
+### Step 6: Build @awesome-s3-uploader/core mock provider
 Implement `mock-provider.ts` with configurable delays and failure simulation. Write tests.
 
-### Step 7: Build @s3up/core upload manager (single file)
+### Step 7: Build @awesome-s3-uploader/core upload manager (single file)
 Implement single-file upload flow through the upload manager. Wire up events, progress tracking, abort. Write tests using mock provider.
 
-### Step 8: Build @s3up/core multipart upload
+### Step 8: Build @awesome-s3-uploader/core multipart upload
 Implement `multipart-manager.ts` and `chunk-worker.ts`. Add multipart flow to upload manager. Write tests.
 
-### Step 9: Build @s3up/core S3 provider
+### Step 9: Build @awesome-s3-uploader/core S3 provider
 Implement `s3-provider.ts` that talks to a signing server. Write tests mocking `fetch`.
 
-### Step 10: Build @s3up/core createUploader factory
+### Step 10: Build @awesome-s3-uploader/core createUploader factory
 Wire everything together in `uploader.ts`. Set up barrel exports in `index.ts`. Write integration test using mock provider end-to-end.
 
-### Step 11: Build @s3up/react hooks
+### Step 11: Build @awesome-s3-uploader/react hooks
 Implement `useUploader`, `useUpload`, `useDropZone`. Write tests with @testing-library/react.
 
-### Step 12: Build @s3up/react components
+### Step 12: Build @awesome-s3-uploader/react components
 Implement `DropZone`, `FileInput`, `ProgressBar`, `UploaderContext`. Write tests.
 
 ### Step 13: Build examples
@@ -1819,16 +1819,16 @@ Final README, CONTRIBUTING.md, issue templates, migration guide, interactive dem
 ## Future Phases (Not in Scope for Phase 1)
 
 ### Phase 2: Framework Expansion
-- `@s3up/vue` — Vue 3 composables (`useUploader`, `useUpload`, `useDropZone`)
-- `@s3up/svelte` — Svelte stores and actions
-- `@s3up/angular` — Injectable service with RxJS observables
-- `@s3up/solid` — SolidJS primitives
+- `@awesome-s3-uploader/vue` — Vue 3 composables (`useUploader`, `useUpload`, `useDropZone`)
+- `@awesome-s3-uploader/svelte` — Svelte stores and actions
+- `@awesome-s3-uploader/angular` — Injectable service with RxJS observables
+- `@awesome-s3-uploader/solid` — SolidJS primitives
 
 ### Phase 3: Ecosystem
 - Additional providers: Google Cloud Storage, Azure Blob, Cloudflare R2, DigitalOcean Spaces
 - Pre-built UI component library (styled drop zones, file grids, image previews)
 - Image preprocessing: client-side resize/compress before upload
-- Server SDK helpers: `@s3up/server-express`, `@s3up/server-next`
-- CLI tool: `npx s3up init` to scaffold server + client config
+- Server SDK helpers: `@awesome-s3-uploader/server-express`, `@awesome-s3-uploader/server-next`
+- CLI tool: `npx @awesome-s3-uploader init` to scaffold server + client config
 - Resumable uploads: persist upload state to localStorage, resume across page reloads
 - Web Worker support: offload chunking/hashing to a worker thread

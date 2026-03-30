@@ -1,5 +1,5 @@
 {
-  "name": "s3up-monorepo",
+  "name": "@awesome-s3-uploader-monorepo",
   "private": true,
   "scripts": {
     "build": "pnpm -r --filter './packages/*' run build",

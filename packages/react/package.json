@@ -16,7 +16,7 @@
   "files": ["dist", "README.md", "LICENSE"],
   "sideEffects": false,
   "keywords": ["react", "s3", "upload", "hooks", "drag-drop", "file-upload"],
-  "repository": { "type": "git", "url": "https://github.com/YOUR_ORG/s3up", "directory": "packages/react" },
+  "repository": { "type": "git", "url": "https://github.com/hassantauqeer/s3-uploader", "directory": "packages/react" },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

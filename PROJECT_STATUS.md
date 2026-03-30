@@ -1,4 +1,4 @@
-# S3Up Project Status
+# @awesome-s3-uploader Project Status
 
 ## ✅ Completed (12 Commits)
 
@@ -53,7 +53,7 @@
 ## 📦 Package Structure
 
 ```
-s3up/
+@awesome-s3-uploader/
 ├── packages/
 │   ├── core/              # @awesome-s3-uploader/core v0.1.0
 │   │   ├── src/

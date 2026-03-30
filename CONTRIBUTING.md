@@ -1,6 +1,6 @@
-# Contributing to S3Up
+# Contributing to @awesome-s3-uploader
 
-Thank you for your interest in contributing to S3Up! This guide will help you get started.
+Thank you for your interest in contributing to @awesome-s3-uploader! This guide will help you get started.
 
 ## Prerequisites
 
@@ -13,8 +13,8 @@ Thank you for your interest in contributing to S3Up! This guide will help you ge
 1. **Fork and clone the repository**
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/s3up.git
-cd s3up
+git clone https://github.com/YOUR_USERNAME/@awesome-s3-uploader.git
+cd @awesome-s3-uploader
 ```
 
 2. **Install dependencies**
@@ -38,7 +38,7 @@ pnpm test
 ## Project Structure
 
 ```
-s3up/
+@awesome-s3-uploader/
 ├── packages/
 │   ├── core/          # @awesome-s3-uploader/core - Framework-agnostic upload engine
 │   └── react/         # @awesome-s3-uploader/react - React hooks and components
