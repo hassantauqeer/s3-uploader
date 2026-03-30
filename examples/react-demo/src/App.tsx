@@ -36,8 +36,8 @@ function App() {
   });
 
   // Protected API (JWT auth with custom signer)
-  // Create provider once, but signer uses ref to get latest token
-  const protectedProvider = useMemo(() => createS3Provider({
+  // Signer functions use ref to get latest token value
+  const protectedProvider = createS3Provider({
       signer: async (_file, params) => {
         const token = authTokenRef.current;
         const response = await fetch('http://localhost:3001/api/auth/s3/sign', {
@@ -123,7 +123,7 @@ function App() {
           });
         },
       },
-    }), []);
+    });
 
   const protectedUpload = useUpload({
     provider: protectedProvider,
