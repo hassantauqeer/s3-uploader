@@ -1,5 +1,4 @@
-import { useUpload } from '@s3up/react';
-import { createS3Provider } from '@s3up/core';
+import { useUpload, createS3Provider } from '@s3up/react';
 import './App.css';
 
 function App() {
