@@ -281,6 +281,19 @@ function App() {
                 <li>No authentication needed</li>
                 <li>Express server on port 3001</li>
               </ul>
+              <h3 style={{ marginTop: '1.5rem' }}>Multipart Uploads</h3>
+              <p style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                Files &gt;5MB automatically use multipart upload:
+              </p>
+              <ul>
+                <li>Split into 5MB chunks</li>
+                <li>Parallel upload for speed</li>
+                <li>Resume on failure</li>
+                <li>Better for large files</li>
+              </ul>
+              <p style={{ fontSize: '0.875rem', marginTop: '0.75rem', opacity: 0.8 }}>
+                Try uploading a file &gt;5MB to see multipart in action!
+              </p>
               <h3 style={{ marginTop: '1.5rem' }}>Requirements</h3>
               <ul>
                 <li>MinIO: <code>docker-compose up -d</code></li>
@@ -317,10 +330,21 @@ function App() {
                     Logout
                   </button>
                   <ul style={{ marginTop: '1.5rem' }}>
+                    <li>Real S3 uploads</li>
                     <li>Custom signer functions</li>
                     <li>JWT token in headers</li>
                     <li>Files stored in users/{'{userId}'}/</li>
                     <li>Protected endpoints</li>
+                  </ul>
+                  <h3 style={{ marginTop: '1.5rem' }}>Multipart Support</h3>
+                  <p style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                    Custom signers work with multipart:
+                  </p>
+                  <ul>
+                    <li>initiate, signPart, complete, abort</li>
+                    <li>JWT auth on all requests</li>
+                    <li>User-isolated multipart uploads</li>
+                    <li>Automatic for files &gt;5MB</li>
                   </ul>
                 </>
               )}
