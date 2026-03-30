@@ -8,22 +8,34 @@ import type {
   CompleteMultipartParams,
   CompleteMultipartResult,
   AbortMultipartParams,
+  SignerFunction,
+  MultipartSignerFunctions,
 } from '../types';
 import { UploadError } from '../types';
 
 export interface S3ProviderConfig {
-  signingUrl: string;
+  // Simple mode: URL-based signing
+  signingUrl?: string;
   signingMethod?: 'GET' | 'POST';
   signingHeaders?: Record<string, string> | (() => Record<string, string>);
   signingParams?: Record<string, string>;
   withCredentials?: boolean;
   multipartUrl?: string;
   requestFn?: (url: string, options: RequestInit) => Promise<Response>;
+  
+  // Advanced mode: Custom signer functions
+  signer?: SignerFunction;
+  multipartSigner?: MultipartSignerFunctions;
 }
 
 export function createS3Provider(config: S3ProviderConfig): UploadProvider {
+  // Validate config: must have either signingUrl or signer
+  if (!config.signingUrl && !config.signer) {
+    throw new Error('S3Provider requires either signingUrl or signer function');
+  }
+
   const signingMethod = config.signingMethod ?? 'GET';
-  const multipartUrl = config.multipartUrl ?? `${config.signingUrl}/multipart`;
+  const multipartUrl = config.multipartUrl ?? (config.signingUrl ? `${config.signingUrl}/multipart` : '');
   const requestFn = config.requestFn ?? fetch.bind(globalThis);
 
   async function makeSigningRequest(
@@ -71,6 +83,22 @@ export function createS3Provider(config: S3ProviderConfig): UploadProvider {
 
   return {
     async getSignedUrl(params: SignedUrlParams): Promise<SignedUrlResult> {
+      // Use custom signer if provided
+      if (config.signer) {
+        // Create a minimal File object for the signer (we don't have the actual file here)
+        const dummyFile = new File([], params.fileName, { type: params.contentType });
+        return await config.signer(dummyFile, params);
+      }
+
+      // Fall back to URL-based signing
+      if (!config.signingUrl) {
+        throw new UploadError(
+          'No signing URL or signer function provided',
+          'SIGNING_ERROR',
+          { retryable: false }
+        );
+      }
+
       const response = await makeSigningRequest(config.signingUrl, {
         fileName: params.fileName,
         contentType: params.contentType,
@@ -98,6 +126,21 @@ export function createS3Provider(config: S3ProviderConfig): UploadProvider {
     },
 
     async initiateMultipart(params: InitiateMultipartParams): Promise<MultipartInitResult> {
+      // Use custom multipart signer if provided
+      if (config.multipartSigner?.initiate) {
+        const dummyFile = new File([], params.fileName, { type: params.contentType });
+        return await config.multipartSigner.initiate(dummyFile, params);
+      }
+
+      // Fall back to URL-based signing
+      if (!multipartUrl) {
+        throw new UploadError(
+          'No multipart URL or multipart signer provided',
+          'MULTIPART_INIT_ERROR',
+          { retryable: false }
+        );
+      }
+
       const response = await makeSigningRequest(`${multipartUrl}/initiate`, {
         fileName: params.fileName,
         contentType: params.contentType,
@@ -123,6 +166,21 @@ export function createS3Provider(config: S3ProviderConfig): UploadProvider {
     },
 
     async getPartSignedUrl(params: PartSignedUrlParams): Promise<SignedUrlResult> {
+      // Use custom multipart signer if provided
+      if (config.multipartSigner?.signPart) {
+        const dummyFile = new File([], params.key, { type: 'application/octet-stream' });
+        return await config.multipartSigner.signPart(dummyFile, params);
+      }
+
+      // Fall back to URL-based signing
+      if (!multipartUrl) {
+        throw new UploadError(
+          'No multipart URL or multipart signer provided',
+          'MULTIPART_PART_ERROR',
+          { retryable: false }
+        );
+      }
+
       const response = await makeSigningRequest(`${multipartUrl}/sign-part`, {
         uploadId: params.uploadId,
         key: params.key,
@@ -148,6 +206,21 @@ export function createS3Provider(config: S3ProviderConfig): UploadProvider {
     },
 
     async completeMultipart(params: CompleteMultipartParams): Promise<CompleteMultipartResult> {
+      // Use custom multipart signer if provided
+      if (config.multipartSigner?.complete) {
+        const dummyFile = new File([], params.key, { type: 'application/octet-stream' });
+        return await config.multipartSigner.complete(dummyFile, params);
+      }
+
+      // Fall back to URL-based signing
+      if (!multipartUrl) {
+        throw new UploadError(
+          'No multipart URL or multipart signer provided',
+          'MULTIPART_COMPLETE_ERROR',
+          { retryable: false }
+        );
+      }
+
       const response = await makeSigningRequest(`${multipartUrl}/complete`, {
         uploadId: params.uploadId,
         key: params.key,
@@ -172,6 +245,21 @@ export function createS3Provider(config: S3ProviderConfig): UploadProvider {
     },
 
     async abortMultipart(params: AbortMultipartParams): Promise<void> {
+      // Use custom multipart signer if provided
+      if (config.multipartSigner?.abort) {
+        const dummyFile = new File([], params.key, { type: 'application/octet-stream' });
+        return await config.multipartSigner.abort(dummyFile, params);
+      }
+
+      // Fall back to URL-based signing
+      if (!multipartUrl) {
+        throw new UploadError(
+          'No multipart URL or multipart signer provided',
+          'ABORT_ERROR',
+          { retryable: false }
+        );
+      }
+
       await makeSigningRequest(`${multipartUrl}/abort`, {
         uploadId: params.uploadId,
         key: params.key,

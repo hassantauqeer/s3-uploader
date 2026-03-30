@@ -21,6 +21,28 @@ export interface SignedUrlResult {
   headers?: Record<string, string>;
 }
 
+// Custom signer function types for flexible auth
+export type SignerFunction = (
+  file: File,
+  params: SignedUrlParams
+) => Promise<SignedUrlResult>;
+
+export interface MultipartSignerFunctions {
+  initiate: (
+    file: File,
+    params: InitiateMultipartParams
+  ) => Promise<MultipartInitResult>;
+  signPart: (
+    file: File,
+    params: PartSignedUrlParams
+  ) => Promise<SignedUrlResult>;
+  complete: (
+    file: File,
+    params: CompleteMultipartParams
+  ) => Promise<CompleteMultipartResult>;
+  abort: (file: File, params: AbortMultipartParams) => Promise<void>;
+}
+
 export interface InitiateMultipartParams {
   fileName: string;
   contentType: string;
