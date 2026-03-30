@@ -28,9 +28,9 @@ export interface S3ProviderConfig {
   multipartSigner?: MultipartSignerFunctions;
   
   // Multipart configuration
-  multipartThreshold?: number; // File size threshold for multipart upload (default: 100MB)
+  multipartThreshold?: number; // File size threshold for multipart upload (default: Infinity - disabled)
   chunkSize?: number; // Size of each part in multipart upload (default: 10MB)
-  maxConcurrency?: number; // Max concurrent part uploads (default: 4)
+  maxConcurrency?: number; // Max concurrent part uploads (default: 3)
 }
 
 export function createS3Provider(config: S3ProviderConfig): UploadProvider {

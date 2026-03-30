@@ -93,16 +93,16 @@ function App() {
       },
       multipartThreshold: 5 * 1024 * 1024, // 5MB - triggers multipart easily
       chunkSize: 5 * 1024 * 1024, // 5MB chunks
+      maxConcurrency: 5
     }),
     validation: {
       maxFileSize: 10 * 1024 * 1024 * 1024, // 10GB
-      allowedTypes: ['image/*'],
+      allowedTypes: ['*'],
     },
   });
 
   // Protected API (JWT auth with custom signer - single upload only)
   // Signer function uses ref to get latest token value
-  // No multipart config = always uses single upload
   const protectedProvider = useMemo(() => {
     return createS3Provider({
       signer: async (_file, params) => {
@@ -126,7 +126,7 @@ function App() {
         
         return response.json();
       },
-      // No multipartSigner or multipartThreshold = single upload only
+      // No multipart config = single upload only (default behavior)
     });
   }, []);
 

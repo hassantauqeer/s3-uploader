@@ -45,9 +45,10 @@ export class UploadManager {
       signingParams: config.signingParams ?? {},
       signingWithCredentials: config.signingWithCredentials ?? false,
       // Use provider config if available, otherwise use config or defaults
-      multipartThreshold: this.provider.multipartThreshold ?? config.multipartThreshold ?? 100 * 1024 * 1024,
+      // Default to Infinity (disabled) - multipart is opt-in, not opt-out
+      multipartThreshold: this.provider.multipartThreshold ?? config.multipartThreshold ?? Infinity,
       chunkSize: this.provider.chunkSize ?? config.chunkSize ?? 10 * 1024 * 1024,
-      maxConcurrency: this.provider.maxConcurrency ?? config.maxConcurrency ?? 4,
+      maxConcurrency: this.provider.maxConcurrency ?? config.maxConcurrency ?? 3,
       retry: getRetryConfig(config.retry),
       validation: config.validation ?? {},
       autoUpload: config.autoUpload ?? true,
@@ -231,8 +232,24 @@ export class UploadManager {
       task = updateTaskStatus(task, 'uploading');
       this.tasks.set(taskId, task);
 
-      // Upload parts
+      // Upload parts in parallel with maxConcurrency limit
+      const allPromises: Promise<void>[] = [];
+      let completedBytes = 0;
+      let activeCount = 0;
+      let resolveSlot: (() => void) | null = null;
+
+      const waitForSlot = () => {
+        return new Promise<void>((resolve) => {
+          resolveSlot = resolve;
+        });
+      };
+
       for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
+        // Wait if we've reached max concurrency
+        if (activeCount >= this.config.maxConcurrency) {
+          await waitForSlot();
+        }
+
         if (signal.aborted) {
           throw new Error('Upload aborted');
         }
@@ -240,37 +257,59 @@ export class UploadManager {
         const start = (partNumber - 1) * chunkSize;
         const end = Math.min(start + chunkSize, task.file.size);
         const chunk = task.file.slice(start, end);
+        const currentPartNumber = partNumber;
 
-        // Get signed URL for this part
-        const partSignedUrl = await withRetry(
-          () =>
-            this.provider.getPartSignedUrl({
-              uploadId,
-              key,
-              partNumber,
-              contentLength: chunk.size,
-            }),
-          this.config.retry,
-          { taskId }
-        );
+        activeCount++;
+        const uploadPromise = (async () => {
+          try {
+            // Get signed URL for this part
+            const partSignedUrl = await withRetry(
+              () =>
+                this.provider.getPartSignedUrl({
+                  uploadId,
+                  key,
+                  partNumber: currentPartNumber,
+                  contentLength: chunk.size,
+                }),
+              this.config.retry,
+              { taskId }
+            );
 
-        // Upload the part
-        const etag = await this.uploadPart(chunk, partSignedUrl.signedUrl, signal);
-        uploadedParts.push({ partNumber, etag });
+            // Upload the part
+            const etag = await this.uploadPart(chunk, partSignedUrl.signedUrl, signal);
+            uploadedParts.push({ partNumber: currentPartNumber, etag });
 
-        // Update progress
-        const progress: UploadProgress = {
-          loaded: end,
-          total: task.file.size,
-          percent: Math.round((end / task.file.size) * 100),
-          speed: 0,
-          estimatedTimeRemaining: 0,
-        };
+            // Update progress
+            completedBytes += chunk.size;
+            const progress: UploadProgress = {
+              loaded: completedBytes,
+              total: task.file.size,
+              percent: Math.round((completedBytes / task.file.size) * 100),
+              speed: 0,
+              estimatedTimeRemaining: 0,
+            };
 
-        const updatedTask = updateTaskProgress(task, progress);
-        this.tasks.set(taskId, updatedTask);
-        this.emitter.emit('upload:progress', { task: updatedTask, progress });
+            const updatedTask = updateTaskProgress(task, progress);
+            this.tasks.set(taskId, updatedTask);
+            this.emitter.emit('upload:progress', { task: updatedTask, progress });
+          } finally {
+            activeCount--;
+            if (resolveSlot) {
+              const resolve = resolveSlot;
+              resolveSlot = null;
+              resolve();
+            }
+          }
+        })();
+
+        allPromises.push(uploadPromise);
       }
+
+      // Wait for all parts to complete
+      await Promise.all(allPromises);
+
+      // Sort parts by partNumber for completion
+      uploadedParts.sort((a, b) => a.partNumber - b.partNumber);
 
       // Complete multipart upload
       task = updateTaskStatus(task, 'completing');
