@@ -1,5 +1,5 @@
 {
-  "name": "@ht/s3-uploader-react",
+  "name": "@awesome-s3-uploader/react",
   "version": "0.1.0",
   "description": "React hooks and components for S3 file uploads",
   "license": "MIT",
@@ -26,7 +26,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@ht/s3-uploader": "workspace:*"
+    "@awesome-s3-uploader/core": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
