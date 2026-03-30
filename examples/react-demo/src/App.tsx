@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useUpload, createS3Provider } from '@awesome-s3-uploader/react';
 import './App.css';
 
@@ -30,8 +30,8 @@ function App() {
   });
 
   // Protected API (JWT auth with custom signer)
-  const protectedUpload = useUpload({
-    provider: createS3Provider({
+  // Use useMemo to recreate provider when authToken changes
+  const protectedProvider = useMemo(() => createS3Provider({
       signer: async (file, params) => {
         const response = await fetch('http://localhost:3001/api/auth/s3/sign', {
           method: 'POST',
@@ -112,7 +112,10 @@ function App() {
           });
         },
       },
-    }),
+    }), [authToken]);
+
+  const protectedUpload = useUpload({
+    provider: protectedProvider,
     validation: {
       maxFileSize: 10 * 1024 * 1024, // 10MB
       allowedTypes: ['image/*', 'application/pdf'],
