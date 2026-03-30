@@ -4,6 +4,11 @@ export interface UploadProvider {
   getPartSignedUrl(params: PartSignedUrlParams): Promise<SignedUrlResult>;
   completeMultipart(params: CompleteMultipartParams): Promise<CompleteMultipartResult>;
   abortMultipart(params: AbortMultipartParams): Promise<void>;
+  
+  // Optional configuration that can override defaults
+  multipartThreshold?: number;
+  chunkSize?: number;
+  maxConcurrency?: number;
 }
 
 export interface SignedUrlParams {

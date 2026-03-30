@@ -44,9 +44,10 @@ export class UploadManager {
       signingHeaders: config.signingHeaders ?? {},
       signingParams: config.signingParams ?? {},
       signingWithCredentials: config.signingWithCredentials ?? false,
-      multipartThreshold: config.multipartThreshold ?? 100 * 1024 * 1024,
-      chunkSize: config.chunkSize ?? 10 * 1024 * 1024,
-      maxConcurrency: config.maxConcurrency ?? 4,
+      // Use provider config if available, otherwise use config or defaults
+      multipartThreshold: this.provider.multipartThreshold ?? config.multipartThreshold ?? 100 * 1024 * 1024,
+      chunkSize: this.provider.chunkSize ?? config.chunkSize ?? 10 * 1024 * 1024,
+      maxConcurrency: this.provider.maxConcurrency ?? config.maxConcurrency ?? 4,
       retry: getRetryConfig(config.retry),
       validation: config.validation ?? {},
       autoUpload: config.autoUpload ?? true,

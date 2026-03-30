@@ -26,6 +26,11 @@ export interface S3ProviderConfig {
   // Advanced mode: Custom signer functions
   signer?: SignerFunction;
   multipartSigner?: MultipartSignerFunctions;
+  
+  // Multipart configuration
+  multipartThreshold?: number; // File size threshold for multipart upload (default: 100MB)
+  chunkSize?: number; // Size of each part in multipart upload (default: 10MB)
+  maxConcurrency?: number; // Max concurrent part uploads (default: 4)
 }
 
 export function createS3Provider(config: S3ProviderConfig): UploadProvider {
@@ -37,6 +42,11 @@ export function createS3Provider(config: S3ProviderConfig): UploadProvider {
   const signingMethod = config.signingMethod ?? 'GET';
   const multipartUrl = config.multipartUrl ?? (config.signingUrl ? `${config.signingUrl}/multipart` : '');
   const requestFn = config.requestFn ?? fetch.bind(globalThis);
+  
+  // Store multipart config for use by upload manager
+  const multipartThreshold = config.multipartThreshold;
+  const chunkSize = config.chunkSize;
+  const maxConcurrency = config.maxConcurrency;
 
   async function makeSigningRequest(
     url: string,
@@ -265,5 +275,10 @@ export function createS3Provider(config: S3ProviderConfig): UploadProvider {
         key: params.key,
       });
     },
+    
+    // Include config values so upload manager can use them
+    multipartThreshold,
+    chunkSize,
+    maxConcurrency,
   };
 }
