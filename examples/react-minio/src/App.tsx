@@ -5,11 +5,8 @@ import './App.css';
 function App() {
   const { upload, status, progress, result, error, reset, inputRef } = useUpload({
     provider: createS3Provider({
-      accessKeyId: 'YOUR_ACCESS_KEY_ID',
-      secretAccessKey: 'YOUR_SECRET_ACCESS_KEY',
-      bucket: 'YOUR_BUCKET_NAME',
-      region: 'YOUR_REGION',
-      endpoint: 'http://localhost:9000',
+      signingUrl: 'http://localhost:3001/api/s3/sign',
+      multipartUrl: 'http://localhost:3001/api/s3/multipart',
     }),
     validation: {
       maxFileSize: 10 * 1024 * 1024, // 10MB
