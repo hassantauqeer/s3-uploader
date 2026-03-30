@@ -19,6 +19,35 @@ header p {
   opacity: 0.9;
 }
 
+.mode-selector {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.mode-button {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.mode-button:hover {
+  background: #f3f4f6;
+}
+
+.mode-button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: transparent;
+}
+
 main {
   display: grid;
   gap: 2rem;
@@ -158,4 +187,12 @@ main {
   left: 0;
   color: #10b981;
   font-weight: bold;
+}
+
+.info code {
+  background: #f3f4f6;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: #667eea;
 }
