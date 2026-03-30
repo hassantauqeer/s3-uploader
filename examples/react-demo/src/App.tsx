@@ -50,15 +50,12 @@ function App() {
     },
   });
 
-  // Protected API (JWT auth with custom signer)
-  // Signer functions use ref to get latest token value
+  // Protected API (JWT auth with custom signer - single upload only)
+  // Signer function uses ref to get latest token value
   const protectedProvider = useMemo(() => {
-    console.log('Creating protected provider');
     return createS3Provider({
       signer: async (_file, params) => {
         const token = authTokenRef.current;
-        console.log('Signer called, token from ref:', token);
-        console.log('authTokenRef:', authTokenRef);
         const response = await fetch('http://localhost:3001/api/auth/s3/sign', {
           method: 'POST',
           headers: {
@@ -78,70 +75,8 @@ function App() {
         
         return response.json();
       },
-      multipartSigner: {
-        initiate: async (file, params) => {
-          const token = authTokenRef.current;
-          const response = await fetch('http://localhost:3001/api/auth/s3/multipart/initiate', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              fileName: params.fileName,
-              contentType: params.contentType,
-              fileSize: params.fileSize,
-            }),
-          });
-          return response.json();
-        },
-        signPart: async (file, params) => {
-          const token = authTokenRef.current;
-          const response = await fetch('http://localhost:3001/api/auth/s3/multipart/sign-part', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              uploadId: params.uploadId,
-              key: params.key,
-              partNumber: params.partNumber,
-            }),
-          });
-          return response.json();
-        },
-        complete: async (file, params) => {
-          const token = authTokenRef.current;
-          const response = await fetch('http://localhost:3001/api/auth/s3/multipart/complete', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              uploadId: params.uploadId,
-              key: params.key,
-              parts: params.parts,
-            }),
-          });
-          return response.json();
-        },
-        abort: async (file, params) => {
-          const token = authTokenRef.current;
-          await fetch('http://localhost:3001/api/auth/s3/multipart/abort', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              uploadId: params.uploadId,
-              key: params.key,
-            }),
-          });
-        },
-      },
+      // No multipart support for protected uploads
+      multipartThreshold: Number.MAX_SAFE_INTEGER, // Disable multipart
     });
   }, []);
 
@@ -374,21 +309,14 @@ function App() {
                   </button>
                   <ul style={{ marginTop: '1.5rem' }}>
                     <li>Real S3 uploads</li>
-                    <li>Custom signer functions</li>
+                    <li>Custom signer function</li>
                     <li>JWT token in headers</li>
                     <li>Files stored in users/{'{userId}'}/</li>
-                    <li>Protected endpoints</li>
+                    <li>Single upload only (no multipart)</li>
                   </ul>
-                  <h3 style={{ marginTop: '1.5rem' }}>Multipart Support</h3>
-                  <p style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
-                    Custom signers work with multipart:
+                  <p style={{ fontSize: '0.875rem', marginTop: '1rem', opacity: 0.8 }}>
+                    For multipart uploads with auth, see the Multipart Upload mode and extend it with JWT.
                   </p>
-                  <ul>
-                    <li>initiate, signPart, complete, abort</li>
-                    <li>JWT auth on all requests</li>
-                    <li>User-isolated multipart uploads</li>
-                    <li>Automatic for files &gt;5MB</li>
-                  </ul>
                 </>
               )}
               <h3 style={{ marginTop: '1.5rem' }}>Requirements</h3>
@@ -396,9 +324,6 @@ function App() {
                 <li>MinIO: <code>docker-compose up -d</code></li>
                 <li>Server: <code>cd examples/server/node-express-unified && npm start</code></li>
               </ul>
-              <p style={{ fontSize: '0.875rem', marginTop: '1rem', opacity: 0.8 }}>
-                Same server, different endpoints!
-              </p>
             </>
           )}
         </div>

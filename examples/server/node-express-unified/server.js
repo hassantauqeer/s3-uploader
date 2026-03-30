@@ -264,123 +264,6 @@ app.post('/api/auth/s3/sign', authenticateToken, async (req, res) => {
   }
 });
 
-// Protected: Multipart upload - Initiate
-app.post('/api/auth/s3/multipart/initiate', authenticateToken, async (req, res) => {
-  try {
-    const { fileName, contentType, path } = req.body;
-
-    if (!fileName || !contentType) {
-      return res.status(400).json({ error: 'fileName and contentType are required' });
-    }
-
-    const userPath = `users/${req.user.id}`;
-    const key = path ? `${userPath}/${path}/${fileName}` : `${userPath}/${fileName}`;
-
-    const command = new CreateMultipartUploadCommand({
-      Bucket: BUCKET_NAME,
-      Key: key,
-      ContentType: contentType,
-    });
-
-    const response = await s3Client.send(command);
-
-    res.json({
-      uploadId: response.UploadId,
-      key,
-    });
-  } catch (error) {
-    console.error('Error initiating multipart upload:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Protected: Multipart upload - Sign part
-app.post('/api/auth/s3/multipart/sign-part', authenticateToken, async (req, res) => {
-  try {
-    const { uploadId, key, partNumber } = req.body;
-
-    if (!uploadId || !key || !partNumber) {
-      return res.status(400).json({ error: 'uploadId, key, and partNumber are required' });
-    }
-
-    const command = new UploadPartCommand({
-      Bucket: BUCKET_NAME,
-      Key: key,
-      UploadId: uploadId,
-      PartNumber: partNumber,
-    });
-
-    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
-
-    res.json({
-      signedUrl,
-      key,
-    });
-  } catch (error) {
-    console.error('Error signing part:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Protected: Multipart upload - Complete
-app.post('/api/auth/s3/multipart/complete', authenticateToken, async (req, res) => {
-  try {
-    const { uploadId, key, parts } = req.body;
-
-    if (!uploadId || !key || !parts) {
-      return res.status(400).json({ error: 'uploadId, key, and parts are required' });
-    }
-
-    const command = new CompleteMultipartUploadCommand({
-      Bucket: BUCKET_NAME,
-      Key: key,
-      UploadId: uploadId,
-      MultipartUpload: {
-        Parts: parts.map((part) => ({
-          ETag: part.etag,
-          PartNumber: part.partNumber,
-        })),
-      },
-    });
-
-    const response = await s3Client.send(command);
-    const publicUrl = `${PUBLIC_URL}/${BUCKET_NAME}/${key}`;
-
-    res.json({
-      publicUrl,
-      key,
-      etag: response.ETag,
-    });
-  } catch (error) {
-    console.error('Error completing multipart upload:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Protected: Multipart upload - Abort
-app.post('/api/auth/s3/multipart/abort', authenticateToken, async (req, res) => {
-  try {
-    const { uploadId, key } = req.body;
-
-    if (!uploadId || !key) {
-      return res.status(400).json({ error: 'uploadId and key are required' });
-    }
-
-    const command = new AbortMultipartUploadCommand({
-      Bucket: BUCKET_NAME,
-      Key: key,
-      UploadId: uploadId,
-    });
-
-    await s3Client.send(command);
-
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Error aborting multipart upload:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // ============================================================================
 // Server Start
 // ============================================================================
@@ -389,11 +272,10 @@ app.listen(PORT, () => {
   console.log(`🚀 S3 Signing Server running on http://localhost:${PORT}`);
   console.log(`\n📋 Available endpoints:`);
   console.log(`   Public API (no auth):`);
-  console.log(`   - GET  /api/s3/sign`);
-  console.log(`   - POST /api/s3/multipart/*`);
-  console.log(`\n   Protected API (JWT auth):`);
+  console.log(`   - GET  /api/s3/sign                    (single upload)`);
+  console.log(`   - POST /api/s3/multipart/*             (multipart upload)`);
+  console.log(`\n   Protected API (JWT auth - single upload only):`);
   console.log(`   - POST /api/auth/login`);
   console.log(`   - POST /api/auth/s3/sign`);
-  console.log(`   - POST /api/auth/s3/multipart/*`);
   console.log(`\n   Login: username=demo, password=demo123`);
 });
