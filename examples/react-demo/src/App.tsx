@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useUpload, createS3Provider } from '@awesome-s3-uploader/react';
 import './App.css';
 
@@ -37,7 +37,9 @@ function App() {
 
   // Protected API (JWT auth with custom signer)
   // Signer functions use ref to get latest token value
-  const protectedProvider = createS3Provider({
+  const protectedProvider = useMemo(() => {
+    console.log('Creating protected provider');
+    return createS3Provider({
       signer: async (_file, params) => {
         const token = authTokenRef.current;
         const response = await fetch('http://localhost:3001/api/auth/s3/sign', {
@@ -124,6 +126,7 @@ function App() {
         },
       },
     });
+  }, []);
 
   const protectedUpload = useUpload({
     provider: protectedProvider,
