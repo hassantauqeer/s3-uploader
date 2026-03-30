@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo } from 'react';
 import { useUpload, createS3Provider } from '@awesome-s3-uploader/react';
 import './App.css';
 
-type Mode = 'mock' | 'public' | 'protected';
+type Mode = 'mock' | 'public' | 'multipart' | 'protected';
 
 function App() {
   const [mode, setMode] = useState<Mode>('mock');
@@ -23,15 +23,30 @@ function App() {
     },
   });
 
-  // Public API (no auth)
+  // Public API (no auth) - Single upload
   const publicUpload = useUpload({
     provider: createS3Provider({
       signingUrl: 'http://localhost:3001/api/s3/sign',
       multipartUrl: 'http://localhost:3001/api/s3/multipart',
+      multipartThreshold: 100 * 1024 * 1024, // 100MB (default, won't trigger easily)
     }),
     validation: {
-      maxFileSize: 10 * 1024 * 1024, // 10MB
-      allowedTypes: ['image/*', 'application/pdf'],
+      maxFileSize: 10 * 1024 * 1024 * 1024, // 10GB
+      allowedTypes: ['*'],
+    },
+  });
+
+  // Public API (no auth) - Multipart upload example
+  const publicMultipartUpload = useUpload({
+    provider: createS3Provider({
+      signingUrl: 'http://localhost:3001/api/s3/sign',
+      multipartUrl: 'http://localhost:3001/api/s3/multipart',
+      multipartThreshold: 5 * 1024 * 1024, // 5MB - triggers multipart easily
+      chunkSize: 5 * 1024 * 1024, // 5MB chunks
+    }),
+    validation: {
+      maxFileSize: 10 * 1024 * 1024 * 1024, // 10GB
+      allowedTypes: ['*'],
     },
   });
 
@@ -139,7 +154,10 @@ function App() {
   });
 
   const { upload, status, progress, result, error, reset, inputRef } =
-    mode === 'mock' ? mockUpload : mode === 'public' ? publicUpload : protectedUpload;
+    mode === 'mock' ? mockUpload 
+    : mode === 'public' ? publicUpload 
+    : mode === 'multipart' ? publicMultipartUpload 
+    : protectedUpload;
 
   const handleLogin = async () => {
     try {
@@ -177,13 +195,19 @@ function App() {
           className={`mode-button ${mode === 'mock' ? 'active' : ''}`}
           onClick={() => setMode('mock')}
         >
-          Mock
+          Mock Mode
         </button>
         <button
           className={`mode-button ${mode === 'public' ? 'active' : ''}`}
           onClick={() => setMode('public')}
         >
           Public API
+        </button>
+        <button
+          className={`mode-button ${mode === 'multipart' ? 'active' : ''}`}
+          onClick={() => setMode('multipart')}
+        >
+          Multipart Upload
         </button>
         <button
           className={`mode-button ${mode === 'protected' ? 'active' : ''}`}
@@ -279,20 +303,39 @@ function App() {
                 <li>Real S3 uploads</li>
                 <li>Simple URL-based signing</li>
                 <li>No authentication needed</li>
-                <li>Express server on port 3001</li>
+                <li>Single PUT request</li>
               </ul>
-              <h3 style={{ marginTop: '1.5rem' }}>Multipart Uploads</h3>
-              <p style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
-                Files &gt;5MB automatically use multipart upload:
+              <p style={{ fontSize: '0.875rem', marginTop: '1rem', opacity: 0.8 }}>
+                Best for files under 100MB. For larger files, use Multipart Upload mode.
               </p>
+              <h3 style={{ marginTop: '1.5rem' }}>Requirements</h3>
               <ul>
+                <li>MinIO: <code>docker-compose up -d</code></li>
+                <li>Server: <code>cd examples/server/node-express-unified && npm start</code></li>
+              </ul>
+            </>
+          )}
+          
+          {mode === 'multipart' && (
+            <>
+              <h3>Multipart Upload (No Auth)</h3>
+              <ul>
+                <li>Automatic for files &gt;5MB</li>
                 <li>Split into 5MB chunks</li>
                 <li>Parallel upload for speed</li>
                 <li>Resume on failure</li>
-                <li>Better for large files</li>
               </ul>
-              <p style={{ fontSize: '0.875rem', marginTop: '0.75rem', opacity: 0.8 }}>
-                Try uploading a file &gt;5MB to see multipart in action!
+              <h3 style={{ marginTop: '1.5rem' }}>How It Works</h3>
+              <p style={{ fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                Multipart upload process:
+              </p>
+              <ol style={{ fontSize: '0.875rem', paddingLeft: '1.25rem' }}>
+                <li><strong>Initiate:</strong> POST /api/s3/multipart/initiate</li>
+                <li><strong>Upload Parts:</strong> POST /api/s3/multipart/sign-part (per chunk)</li>
+                <li><strong>Complete:</strong> POST /api/s3/multipart/complete</li>
+              </ol>
+              <p style={{ fontSize: '0.875rem', marginTop: '1rem', opacity: 0.8 }}>
+                Upload a file &gt;5MB to see multipart in action! Check browser console for logs.
               </p>
               <h3 style={{ marginTop: '1.5rem' }}>Requirements</h3>
               <ul>

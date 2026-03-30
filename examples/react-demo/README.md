@@ -52,12 +52,41 @@ pnpm dev
 
 ## Usage
 
-Switch between modes using the toggle buttons at the top. Each mode demonstrates:
+1. Start the development server:
+   ```bash
+   pnpm dev
+   ```
 
-- File selection and validation
-- Real-time upload progress
-- Success/error handling
-- File type and size restrictions (10MB max, images & PDFs only)
+2. Open http://localhost:5173 in your browser
+
+3. Use the mode selector to switch between modes:
+   - **Mock**: No backend needed
+   - **Public API**: Requires MinIO + unified server
+   - **Protected API**: Requires MinIO + unified server + login
+
+4. Select a file and click "Upload File" to test the upload
+
+## Multipart Upload Testing
+
+The uploader automatically uses multipart upload for files larger than 5MB:
+
+1. **Small files (<5MB)**: Single PUT request
+2. **Large files (>5MB)**: Multipart upload with 5MB chunks
+
+To test multipart uploads:
+```bash
+# Create a test file larger than 5MB
+dd if=/dev/zero of=test-10mb.bin bs=1m count=10
+
+# Upload it in the React demo (Public or Protected mode)
+# Watch the console for multipart upload logs
+```
+
+Features of multipart uploads:
+- **Parallel chunks**: Faster uploads for large files
+- **Resume support**: Can retry failed chunks
+- **Progress tracking**: Per-chunk progress updates
+- **Works with auth**: JWT tokens included in all multipart requests (Protected mode)
 
 ## Code Example
 
