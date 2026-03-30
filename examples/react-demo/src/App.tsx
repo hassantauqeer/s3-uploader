@@ -125,6 +125,21 @@ function App() {
         
         return response.json();
       },
+      // Dummy multipart signers (not used, but required by provider)
+      multipartSigner: {
+        initiate: async () => {
+          throw new Error('Multipart upload not supported for protected API');
+        },
+        signPart: async () => {
+          throw new Error('Multipart upload not supported for protected API');
+        },
+        complete: async () => {
+          throw new Error('Multipart upload not supported for protected API');
+        },
+        abort: async () => {
+          throw new Error('Multipart upload not supported for protected API');
+        },
+      },
       // No multipart support for protected uploads
       multipartThreshold: Number.MAX_SAFE_INTEGER, // Disable multipart
     });
