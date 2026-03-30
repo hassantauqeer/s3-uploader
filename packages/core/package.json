@@ -1,5 +1,5 @@
 {
-  "name": "@ht/s3-uploader-core",
+  "name": "@ht/s3-uploader",
   "version": "0.1.0",
   "description": "Framework-agnostic S3 file upload engine with multipart support",
   "license": "MIT",

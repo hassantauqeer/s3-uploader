@@ -26,7 +26,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@ht/s3-uploader-core": "workspace:*"
+    "@ht/s3-uploader": "workspace:*"
   },
   "peerDependencies": {
     "react": ">=18.0.0",

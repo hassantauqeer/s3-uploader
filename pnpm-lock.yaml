@@ -121,7 +121,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@ht/s3-uploader-core':
+      '@ht/s3-uploader':
         specifier: workspace:*
         version: link:../core
     devDependencies:

@@ -5,8 +5,8 @@ import type {
   UploadResult,
   UploadError,
   UploadStatus,
-} from '@ht/s3-uploader-core';
-import { createUploader } from '@ht/s3-uploader-core';
+} from '@ht/s3-uploader';
+import { createUploader } from '@ht/s3-uploader';
 
 export interface UseUploadReturn {
   upload: (file?: File) => void;

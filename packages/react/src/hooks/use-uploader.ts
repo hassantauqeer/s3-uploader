@@ -4,8 +4,8 @@ import type {
   UploaderConfig,
   UploadTask,
   UploadProgress,
-} from '@ht/s3-uploader-core';
-import { createUploader } from '@ht/s3-uploader-core';
+} from '@ht/s3-uploader';
+import { createUploader } from '@ht/s3-uploader';
 
 export interface UseUploaderReturn {
   tasks: UploadTask[];
