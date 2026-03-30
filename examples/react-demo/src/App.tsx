@@ -33,7 +33,7 @@ function App() {
   const protectedUpload = useUpload({
     provider: createS3Provider({
       signer: async (file, params) => {
-        const response = await fetch('http://localhost:3002/api/s3/sign', {
+        const response = await fetch('http://localhost:3001/api/auth/s3/sign', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${authToken}`,
@@ -54,7 +54,7 @@ function App() {
       },
       multipartSigner: {
         initiate: async (file, params) => {
-          const response = await fetch('http://localhost:3002/api/s3/multipart/initiate', {
+          const response = await fetch('http://localhost:3001/api/auth/s3/multipart/initiate', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${authToken}`,
@@ -69,7 +69,7 @@ function App() {
           return response.json();
         },
         signPart: async (file, params) => {
-          const response = await fetch('http://localhost:3002/api/s3/multipart/sign-part', {
+          const response = await fetch('http://localhost:3001/api/auth/s3/multipart/sign-part', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${authToken}`,
@@ -84,7 +84,7 @@ function App() {
           return response.json();
         },
         complete: async (file, params) => {
-          const response = await fetch('http://localhost:3002/api/s3/multipart/complete', {
+          const response = await fetch('http://localhost:3001/api/auth/s3/multipart/complete', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${authToken}`,
@@ -99,7 +99,7 @@ function App() {
           return response.json();
         },
         abort: async (file, params) => {
-          await fetch('http://localhost:3002/api/s3/multipart/abort', {
+          await fetch('http://localhost:3001/api/auth/s3/multipart/abort', {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${authToken}`,
@@ -125,7 +125,7 @@ function App() {
   const handleLogin = async () => {
     try {
       setLoginError(null);
-      const response = await fetch('http://localhost:3002/api/auth/login', {
+      const response = await fetch('http://localhost:3001/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: 'demo', password: 'demo123' }),
@@ -138,7 +138,7 @@ function App() {
       const data = await response.json();
       setAuthToken(data.token);
     } catch (err) {
-      setLoginError('Login failed. Make sure the auth server is running on port 3002.');
+      setLoginError('Login failed. Make sure the server is running on port 3001.');
     }
   };
 
@@ -265,7 +265,7 @@ function App() {
               <h3 style={{ marginTop: '1.5rem' }}>Requirements</h3>
               <ul>
                 <li>MinIO: <code>docker-compose up -d</code></li>
-                <li>Server: <code>cd examples/server/node-express && npm start</code></li>
+                <li>Server: <code>cd examples/server/node-express-unified && npm start</code></li>
               </ul>
             </>
           )}
@@ -308,8 +308,11 @@ function App() {
               <h3 style={{ marginTop: '1.5rem' }}>Requirements</h3>
               <ul>
                 <li>MinIO: <code>docker-compose up -d</code></li>
-                <li>Auth Server: <code>cd examples/server/node-express-auth && npm start</code></li>
+                <li>Server: <code>cd examples/server/node-express-unified && npm start</code></li>
               </ul>
+              <p style={{ fontSize: '0.875rem', marginTop: '1rem', opacity: 0.8 }}>
+                Same server, different endpoints!
+              </p>
             </>
           )}
         </div>

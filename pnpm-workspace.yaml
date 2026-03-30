@@ -1,5 +1,4 @@
 packages:
   - 'packages/*'
-  - 'docs'
-  - 'examples/*'
-  - 'examples/server/*'
+  - 'examples/react-*'
+  - 'examples/server/node-express-unified'

@@ -61,25 +61,7 @@ importers:
         specifier: ^5.4.0
         version: 5.4.21
 
-  examples/server/node-express:
-    dependencies:
-      '@aws-sdk/client-s3':
-        specifier: ^3.700.0
-        version: 3.1019.0
-      '@aws-sdk/s3-request-presigner':
-        specifier: ^3.700.0
-        version: 3.1019.0
-      cors:
-        specifier: ^2.8.5
-        version: 2.8.6
-      dotenv:
-        specifier: ^16.4.5
-        version: 16.6.1
-      express:
-        specifier: ^4.21.0
-        version: 4.22.1
-
-  examples/server/node-express-auth:
+  examples/server/node-express-unified:
     dependencies:
       '@aws-sdk/client-s3':
         specifier: ^3.709.0
@@ -1630,10 +1612,6 @@ packages:
 
   dom-accessibility-api@0.5.16:
     resolution: {integrity: sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg==}
-
-  dotenv@16.6.1:
-    resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
-    engines: {node: '>=12'}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -4634,8 +4612,6 @@ snapshots:
       path-type: 4.0.0
 
   dom-accessibility-api@0.5.16: {}
-
-  dotenv@16.6.1: {}
 
   dunder-proto@1.0.1:
     dependencies:

@@ -1,8 +1,8 @@
 {
-  "name": "s3-signing-server-auth",
+  "name": "s3-signing-server",
   "version": "1.0.0",
   "type": "module",
-  "description": "Protected Express server for S3 pre-signed URLs with JWT authentication",
+  "description": "Unified Express server for S3 pre-signed URLs with public and protected endpoints",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
