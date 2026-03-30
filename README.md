@@ -20,19 +20,19 @@ Modern, framework-agnostic S3 file upload library with multipart support. Built 
 
 | Package | Description | Version |
 |---------|-------------|---------|
-| [`@s3up/core`](./packages/core) | Framework-agnostic upload engine | 0.1.0 |
-| [`@s3up/react`](./packages/react) | React hooks and components | 0.1.0 |
+| [`@awesome-s3-uploader/core`](./packages/core) | Framework-agnostic upload engine | 0.1.0 |
+| [`@awesome-s3-uploader/react`](./packages/react) | React hooks and components | 0.1.0 |
 
 ## Quick Start
 
 ### React
 
 ```bash
-npm install @s3up/react
+npm install @awesome-s3-uploader/react
 ```
 
 ```tsx
-import { useUpload } from '@s3up/react';
+import { useUpload } from '@awesome-s3-uploader/react';
 
 function UploadButton() {
   const { upload, status, progress, result } = useUpload({ 
@@ -52,11 +52,11 @@ function UploadButton() {
 ### Vanilla JS
 
 ```bash
-npm install @s3up/core
+npm install @awesome-s3-uploader/core
 ```
 
 ```javascript
-import { createUploader } from '@s3up/core';
+import { createUploader } from '@awesome-s3-uploader/core';
 
 const uploader = createUploader({ provider: 'mock' });
 
@@ -88,7 +88,7 @@ const uploader = createUploader({
 Connect to your signing server:
 
 ```typescript
-import { createUploader, createS3Provider } from '@s3up/core';
+import { createUploader, createS3Provider } from '@awesome-s3-uploader/core';
 
 const uploader = createUploader({
   provider: createS3Provider({

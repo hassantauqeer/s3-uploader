@@ -1,21 +1,21 @@
-# @s3up/react
+# @awesome-s3-uploader/react
 
 React hooks and components for S3 file uploads.
 
 ## Installation
 
 ```bash
-npm install @s3up/react
+npm install @awesome-s3-uploader/react
 # or
-pnpm add @s3up/react
+pnpm add @awesome-s3-uploader/react
 # or
-yarn add @s3up/react
+yarn add @awesome-s3-uploader/react
 ```
 
 ## Quick Start
 
 ```tsx
-import { useUpload } from '@s3up/react';
+import { useUpload } from '@awesome-s3-uploader/react';
 
 function UploadButton() {
   const { upload, status, progress, result } = useUpload({ provider: 'mock' });

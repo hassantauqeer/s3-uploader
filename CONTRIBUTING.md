@@ -40,8 +40,8 @@ pnpm test
 ```
 s3up/
 ├── packages/
-│   ├── core/          # @s3up/core - Framework-agnostic upload engine
-│   └── react/         # @s3up/react - React hooks and components
+│   ├── core/          # @awesome-s3-uploader/core - Framework-agnostic upload engine
+│   └── react/         # @awesome-s3-uploader/react - React hooks and components
 ├── examples/          # Example applications
 ├── docs/              # Documentation site (Docusaurus)
 └── .github/           # GitHub Actions workflows
@@ -162,7 +162,7 @@ pnpm test:integration
 
 ## Package Development
 
-### @s3up/core
+### @awesome-s3-uploader/core
 
 The core package has zero runtime dependencies. When adding features:
 
@@ -171,7 +171,7 @@ The core package has zero runtime dependencies. When adding features:
 - Write comprehensive tests
 - Update TypeScript types
 
-### @s3up/react
+### @awesome-s3-uploader/react
 
 React bindings should:
 

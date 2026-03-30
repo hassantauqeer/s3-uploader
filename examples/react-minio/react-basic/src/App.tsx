@@ -1,4 +1,4 @@
-import { useUpload } from '@s3up/react';
+import { useUpload } from '@awesome-s3-uploader/react';
 import './App.css';
 
 function App() {

@@ -11,7 +11,7 @@
 - ✅ GitHub Actions CI workflow
 - ✅ Comprehensive .gitignore
 
-### @s3up/core Package (Complete)
+### @awesome-s3-uploader/core Package (Complete)
 - ✅ TypeScript types and interfaces
 - ✅ Type-safe event emitter
 - ✅ File validation (type, size, extension, image dimensions)
@@ -28,7 +28,7 @@
 - ✅ createUploader factory function
 - ✅ Comprehensive test coverage
 
-### @s3up/react Package (Complete)
+### @awesome-s3-uploader/react Package (Complete)
 - ✅ useUploader hook for multi-file uploads
 - ✅ useUpload hook for single-file uploads
 - ✅ React state management with events
@@ -55,7 +55,7 @@
 ```
 s3up/
 ├── packages/
-│   ├── core/              # @s3up/core v0.1.0
+│   ├── core/              # @awesome-s3-uploader/core v0.1.0
 │   │   ├── src/
 │   │   │   ├── types.ts
 │   │   │   ├── uploader.ts
@@ -75,7 +75,7 @@ s3up/
 │   │   │       ├── unique-id.ts
 │   │   │       └── abort-controller.ts
 │   │   └── tests/          # Comprehensive test suite
-│   └── react/             # @s3up/react v0.1.0
+│   └── react/             # @awesome-s3-uploader/react v0.1.0
 │       └── src/
 │           ├── hooks/
 │           │   ├── use-uploader.ts
@@ -124,7 +124,7 @@ pnpm dev
 
 ### Mock Mode (Zero Config)
 ```typescript
-import { createUploader } from '@s3up/core';
+import { createUploader } from '@awesome-s3-uploader/core';
 
 const uploader = createUploader({ provider: 'mock' });
 uploader.addFiles(files);
@@ -132,7 +132,7 @@ uploader.addFiles(files);
 
 ### React Integration
 ```tsx
-import { useUpload } from '@s3up/react';
+import { useUpload } from '@awesome-s3-uploader/react';
 
 const { upload, status, progress } = useUpload({ provider: 'mock' });
 ```
@@ -151,7 +151,7 @@ const uploader = createUploader({
 
 ### Real S3 (Requires Backend)
 ```typescript
-import { createS3Provider } from '@s3up/core';
+import { createS3Provider } from '@awesome-s3-uploader/core';
 
 const uploader = createUploader({
   provider: createS3Provider({ signingUrl: '/api/s3/sign' })

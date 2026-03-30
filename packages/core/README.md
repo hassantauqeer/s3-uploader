@@ -1,21 +1,21 @@
-# @s3up/core
+# @awesome-s3-uploader/core
 
 Framework-agnostic S3 file upload engine with multipart support.
 
 ## Installation
 
 ```bash
-npm install @s3up/core
+npm install @awesome-s3-uploader/core
 # or
-pnpm add @s3up/core
+pnpm add @awesome-s3-uploader/core
 # or
-yarn add @s3up/core
+yarn add @awesome-s3-uploader/core
 ```
 
 ## Quick Start
 
 ```typescript
-import { createUploader } from '@s3up/core';
+import { createUploader } from '@awesome-s3-uploader/core';
 
 // Mock mode - works immediately, no server needed
 const uploader = createUploader({ provider: 'mock' });

@@ -50,7 +50,7 @@ Server will run on http://localhost:3001
 Update your React app to use the real S3 provider:
 
 ```tsx
-import { createS3Provider } from '@s3up/core';
+import { createS3Provider } from '@awesome-s3-uploader/core';
 
 const uploader = createUploader({
   provider: createS3Provider({
