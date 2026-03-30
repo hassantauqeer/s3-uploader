@@ -1,6 +1,12 @@
 import { useState, useRef, useCallback } from 'react';
-import type { UploaderConfig, UploadStatus, UploadProgress, UploadResult, UploadError } from '@s3up/core';
-import { createUploader } from '@s3up/core';
+import type {
+  UploaderConfig,
+  UploadProgress,
+  UploadResult,
+  UploadError,
+  UploadStatus,
+} from '@ht/s3-uploader-core';
+import { createUploader } from '@ht/s3-uploader-core';
 
 export interface UseUploadReturn {
   upload: (file?: File) => void;

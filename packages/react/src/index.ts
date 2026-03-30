@@ -5,7 +5,7 @@ export type { UseUploaderReturn } from './hooks/use-uploader';
 export type { UseUploadReturn } from './hooks/use-upload';
 
 // Re-export core functions for convenience
-export { createS3Provider, createMockProvider, createUploader } from '@s3up/core';
+export { createS3Provider, createMockProvider, createUploader } from '@ht/s3-uploader-core';
 
 export type {
   Uploader,
@@ -21,4 +21,4 @@ export type {
   ValidationConfig,
   ImageValidationConfig,
   RetryConfig,
-} from '@s3up/core';
+} from '@ht/s3-uploader-core';

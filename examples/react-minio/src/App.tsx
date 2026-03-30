@@ -1,4 +1,4 @@
-import { useUpload, createS3Provider } from '@s3up/react';
+import { useUpload, createS3Provider } from '@ht/s3-uploader-react';
 import './App.css';
 
 function App() {

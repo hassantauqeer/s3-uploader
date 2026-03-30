@@ -1,6 +1,11 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import type { UploaderConfig, Uploader, UploadTask, UploadProgress } from '@s3up/core';
-import { createUploader } from '@s3up/core';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import type {
+  Uploader,
+  UploaderConfig,
+  UploadTask,
+  UploadProgress,
+} from '@ht/s3-uploader-core';
+import { createUploader } from '@ht/s3-uploader-core';
 
 export interface UseUploaderReturn {
   tasks: UploadTask[];

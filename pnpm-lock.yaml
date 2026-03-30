@@ -35,7 +35,7 @@ importers:
 
   examples/react-basic:
     dependencies:
-      '@s3up/react':
+      '@ht/s3-uploader-react':
         specifier: workspace:*
         version: link:../../packages/react
       react:
@@ -63,7 +63,7 @@ importers:
 
   examples/react-minio:
     dependencies:
-      '@s3up/react':
+      '@ht/s3-uploader-react':
         specifier: workspace:*
         version: link:../../packages/react
       react:
@@ -121,7 +121,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@s3up/core':
+      '@ht/s3-uploader-core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

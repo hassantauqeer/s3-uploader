@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@s3up/react": "workspace:*",
+    "@ht/s3-uploader-react": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
