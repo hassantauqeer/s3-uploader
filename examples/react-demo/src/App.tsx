@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useUpload, createS3Provider } from '@awesome-s3-uploader/react';
 import './App.css';
 
@@ -8,6 +8,12 @@ function App() {
   const [mode, setMode] = useState<Mode>('mock');
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const authTokenRef = useRef<string | null>(null);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    authTokenRef.current = authToken;
+  }, [authToken]);
 
   const mockUpload = useUpload({
     provider: 'mock',
@@ -30,13 +36,14 @@ function App() {
   });
 
   // Protected API (JWT auth with custom signer)
-  // Use useMemo to recreate provider when authToken changes
+  // Create provider once, but signer uses ref to get latest token
   const protectedProvider = useMemo(() => createS3Provider({
-      signer: async (file, params) => {
+      signer: async (_file, params) => {
+        const token = authTokenRef.current;
         const response = await fetch('http://localhost:3001/api/auth/s3/sign', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -54,10 +61,11 @@ function App() {
       },
       multipartSigner: {
         initiate: async (file, params) => {
+          const token = authTokenRef.current;
           const response = await fetch('http://localhost:3001/api/auth/s3/multipart/initiate', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${authToken}`,
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -69,10 +77,11 @@ function App() {
           return response.json();
         },
         signPart: async (file, params) => {
+          const token = authTokenRef.current;
           const response = await fetch('http://localhost:3001/api/auth/s3/multipart/sign-part', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${authToken}`,
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -84,10 +93,11 @@ function App() {
           return response.json();
         },
         complete: async (file, params) => {
+          const token = authTokenRef.current;
           const response = await fetch('http://localhost:3001/api/auth/s3/multipart/complete', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${authToken}`,
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -99,10 +109,11 @@ function App() {
           return response.json();
         },
         abort: async (file, params) => {
+          const token = authTokenRef.current;
           await fetch('http://localhost:3001/api/auth/s3/multipart/abort', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${authToken}`,
+              'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -112,7 +123,7 @@ function App() {
           });
         },
       },
-    }), [authToken]);
+    }), []);
 
   const protectedUpload = useUpload({
     provider: protectedProvider,
