@@ -82,7 +82,7 @@
 │           │   └── use-upload.ts
 │           └── index.ts
 └── examples/
-    └── react-basic/       # Working demo app
+    └── react/       # Working demo app
 ```
 
 ## 🚀 Next Steps to Make Production-Ready
@@ -104,7 +104,7 @@ pnpm test
 
 ### 4. Try the Example
 ```bash
-cd examples/react-basic
+cd examples/react
 pnpm install
 pnpm dev
 ```
@@ -219,7 +219,7 @@ d8b05c6 docs: add comprehensive README and gitignore
 
 ## 💡 Usage Examples
 
-See `examples/react-basic` for a complete working demo with:
+See `examples/react` for a complete working demo with:
 - File selection
 - Upload progress
 - Success/error states

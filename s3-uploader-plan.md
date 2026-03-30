@@ -56,7 +56,7 @@ Build a modern, framework-agnostic S3 file upload library to replace the abandon
 │   ├── docusaurus.config.ts
 │   └── package.json
 ├── examples/
-│   ├── react-basic/                # Minimal React example
+│   ├── react/                # Minimal React example
 │   ├── react-dropzone/             # Drag-and-drop example
 │   ├── nextjs/                     # Next.js App Router example
 │   ├── vanilla-js/                 # No framework example
@@ -1268,12 +1268,12 @@ Integration tests use a small Express server (in the test setup) that generates 
 
 ## Phase 5: Example Applications
 
-### 5.1 examples/react-basic
+### 5.1 examples/react
 
 Minimal React app demonstrating single file upload with mock provider.
 
 ```
-examples/react-basic/
+examples/react/
 ├── src/
 │   ├── App.tsx
 │   └── main.tsx

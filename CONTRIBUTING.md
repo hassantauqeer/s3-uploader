@@ -71,7 +71,7 @@ pnpm build
 ### Running Examples
 
 ```bash
-cd examples/react-basic
+cd examples/react
 pnpm install
 pnpm dev
 ```

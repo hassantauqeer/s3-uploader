@@ -133,7 +133,7 @@ Full documentation available at [https://YOUR_ORG.github.io/@awesome-s3-uploader
 
 ## Examples
 
-- [React Basic](./examples/react-basic) - Simple single-file upload
+- [React Basic](./examples/react) - Simple single-file upload
 - [React Dropzone](./examples/react-dropzone) - Drag-and-drop multi-file
 - [Next.js](./examples/nextjs) - Full-stack with API routes
 - [Vanilla JS](./examples/vanilla-js) - No framework
@@ -152,7 +152,7 @@ pnpm build
 pnpm test
 
 # Run examples
-cd examples/react-basic
+cd examples/react
 pnpm dev
 ```
 
