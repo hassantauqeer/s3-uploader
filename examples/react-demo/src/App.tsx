@@ -102,6 +102,7 @@ function App() {
 
   // Protected API (JWT auth with custom signer - single upload only)
   // Signer function uses ref to get latest token value
+  // No multipart config = always uses single upload
   const protectedProvider = useMemo(() => {
     return createS3Provider({
       signer: async (_file, params) => {
@@ -125,23 +126,7 @@ function App() {
         
         return response.json();
       },
-      // Dummy multipart signers (not used, but required by provider)
-      multipartSigner: {
-        initiate: async () => {
-          throw new Error('Multipart upload not supported for protected API');
-        },
-        signPart: async () => {
-          throw new Error('Multipart upload not supported for protected API');
-        },
-        complete: async () => {
-          throw new Error('Multipart upload not supported for protected API');
-        },
-        abort: async () => {
-          throw new Error('Multipart upload not supported for protected API');
-        },
-      },
-      // No multipart support for protected uploads
-      multipartThreshold: Number.MAX_SAFE_INTEGER, // Disable multipart
+      // No multipartSigner or multipartThreshold = single upload only
     });
   }, []);
 

@@ -179,7 +179,7 @@ export function createS3Provider(config: S3ProviderConfig): UploadProvider {
       // Fall back to URL-based signing
       if (!multipartUrl) {
         throw new UploadError(
-          'No multipart URL or multipart signer provided',
+          'Multipart upload not configured. Provide either multipartUrl or multipartSigner in provider config.',
           'MULTIPART_INIT_ERROR',
           { retryable: false }
         );
