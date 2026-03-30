@@ -1,12 +1,30 @@
 {
-  "name": "@ht/s3-uploader",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "s3up-monorepo",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "pnpm -r --filter './packages/*' run build",
+    "test": "pnpm -r --filter './packages/*' run test",
+    "test:integration": "pnpm -r --filter './packages/*' run test:integration",
+    "lint": "eslint packages/*/src --ext .ts,.tsx",
+    "typecheck": "pnpm -r --filter './packages/*' run typecheck",
+    "docs:dev": "pnpm --filter docs run start",
+    "docs:build": "pnpm --filter docs run build",
+    "changeset": "changeset",
+    "release": "pnpm build && changeset publish",
+    "clean": "pnpm -r run clean"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  "devDependencies": {
+    "@changesets/cli": "^2.27.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.3.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0",
+    "tsup": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
+  }
 }
