@@ -72,9 +72,14 @@ main {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.upload-button:hover {
+.upload-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+}
+
+.upload-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .status {

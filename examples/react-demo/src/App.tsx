@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { useUpload, createS3Provider } from '@awesome-s3-uploader/react';
 import './App.css';
 
-type Mode = 'mock' | 'minio';
+type Mode = 'mock' | 'public' | 'protected';
 
 function App() {
   const [mode, setMode] = useState<Mode>('mock');
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const mockUpload = useUpload({
     provider: 'mock',
@@ -15,7 +17,8 @@ function App() {
     },
   });
 
-  const minioUpload = useUpload({
+  // Public API (no auth)
+  const publicUpload = useUpload({
     provider: createS3Provider({
       signingUrl: 'http://localhost:3001/api/s3/sign',
       multipartUrl: 'http://localhost:3001/api/s3/multipart',
@@ -26,8 +29,122 @@ function App() {
     },
   });
 
+  // Protected API (JWT auth with custom signer)
+  const protectedUpload = useUpload({
+    provider: createS3Provider({
+      signer: async (file, params) => {
+        const response = await fetch('http://localhost:3002/api/s3/sign', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            fileName: params.fileName,
+            contentType: params.contentType,
+            fileSize: params.fileSize,
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to get signed URL');
+        }
+        
+        return response.json();
+      },
+      multipartSigner: {
+        initiate: async (file, params) => {
+          const response = await fetch('http://localhost:3002/api/s3/multipart/initiate', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              fileName: params.fileName,
+              contentType: params.contentType,
+              fileSize: params.fileSize,
+            }),
+          });
+          return response.json();
+        },
+        signPart: async (file, params) => {
+          const response = await fetch('http://localhost:3002/api/s3/multipart/sign-part', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              uploadId: params.uploadId,
+              key: params.key,
+              partNumber: params.partNumber,
+            }),
+          });
+          return response.json();
+        },
+        complete: async (file, params) => {
+          const response = await fetch('http://localhost:3002/api/s3/multipart/complete', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              uploadId: params.uploadId,
+              key: params.key,
+              parts: params.parts,
+            }),
+          });
+          return response.json();
+        },
+        abort: async (file, params) => {
+          await fetch('http://localhost:3002/api/s3/multipart/abort', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              uploadId: params.uploadId,
+              key: params.key,
+            }),
+          });
+        },
+      },
+    }),
+    validation: {
+      maxFileSize: 10 * 1024 * 1024, // 10MB
+      allowedTypes: ['image/*', 'application/pdf'],
+    },
+  });
+
   const { upload, status, progress, result, error, reset, inputRef } =
-    mode === 'mock' ? mockUpload : minioUpload;
+    mode === 'mock' ? mockUpload : mode === 'public' ? publicUpload : protectedUpload;
+
+  const handleLogin = async () => {
+    try {
+      setLoginError(null);
+      const response = await fetch('http://localhost:3002/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'demo', password: 'demo123' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+      setAuthToken(data.token);
+    } catch (err) {
+      setLoginError('Login failed. Make sure the auth server is running on port 3002.');
+    }
+  };
+
+  const handleLogout = () => {
+    setAuthToken(null);
+  };
 
   return (
     <div className="app">
@@ -41,13 +158,19 @@ function App() {
           className={`mode-button ${mode === 'mock' ? 'active' : ''}`}
           onClick={() => setMode('mock')}
         >
-          Mock Mode
+          Mock
         </button>
         <button
-          className={`mode-button ${mode === 'minio' ? 'active' : ''}`}
-          onClick={() => setMode('minio')}
+          className={`mode-button ${mode === 'public' ? 'active' : ''}`}
+          onClick={() => setMode('public')}
         >
-          MinIO Mode
+          Public API
+        </button>
+        <button
+          className={`mode-button ${mode === 'protected' ? 'active' : ''}`}
+          onClick={() => setMode('protected')}
+        >
+          Protected API
         </button>
       </div>
 
@@ -64,8 +187,12 @@ function App() {
           />
 
           {status === 'idle' && (
-            <button onClick={() => upload()} className="upload-button">
-              Choose File
+            <button 
+              onClick={() => upload()} 
+              className="upload-button"
+              disabled={mode === 'protected' && !authToken}
+            >
+              {mode === 'protected' && !authToken ? 'Login Required' : 'Choose File'}
             </button>
           )}
 
@@ -111,35 +238,78 @@ function App() {
         </div>
 
         <div className="info">
-          {mode === 'mock' ? (
+          {mode === 'mock' && (
             <>
-              <h3>Mock Mode Features</h3>
+              <h3>Mock Mode</h3>
               <ul>
-                <li>✓ No backend required</li>
-                <li>✓ Instant testing</li>
-                <li>✓ Simulated upload progress</li>
-                <li>✓ File validation (10MB max, images & PDFs)</li>
-                <li>✓ Error handling</li>
+                <li>No backend required</li>
+                <li>Instant testing</li>
+                <li>Simulated upload progress</li>
+                <li>File validation</li>
               </ul>
+              <p style={{ fontSize: '0.875rem', marginTop: '1rem', opacity: 0.8 }}>
+                Perfect for development and testing without infrastructure.
+              </p>
             </>
-          ) : (
+          )}
+          
+          {mode === 'public' && (
             <>
-              <h3>MinIO Mode Features</h3>
+              <h3>Public API (No Auth)</h3>
               <ul>
-                <li>✓ Real S3-compatible uploads</li>
-                <li>✓ AWS SDK v3 pre-signed URLs</li>
-                <li>✓ Express signing server</li>
-                <li>✓ File validation (10MB max, images & PDFs)</li>
-                <li>✓ Real-time progress tracking</li>
+                <li>Real S3 uploads</li>
+                <li>Simple URL-based signing</li>
+                <li>No authentication needed</li>
+                <li>Express server on port 3001</li>
               </ul>
               <h3 style={{ marginTop: '1.5rem' }}>Requirements</h3>
               <ul>
-                <li>MinIO running on port 9000</li>
-                <li>Express server running on port 3001</li>
+                <li>MinIO: <code>docker-compose up -d</code></li>
+                <li>Server: <code>cd examples/server/node-express && npm start</code></li>
               </ul>
-              <p style={{ fontSize: '0.875rem', marginTop: '1rem', opacity: 0.8 }}>
-                Run: <code>docker-compose up -d</code> and <code>cd examples/server/node-express && npm start</code>
-              </p>
+            </>
+          )}
+          
+          {mode === 'protected' && (
+            <>
+              <h3>Protected API (JWT Auth)</h3>
+              {!authToken ? (
+                <>
+                  <p style={{ marginBottom: '1rem' }}>Login required to upload files.</p>
+                  <button onClick={handleLogin} className="upload-button" style={{ fontSize: '0.9rem', padding: '0.75rem 2rem' }}>
+                    Login (demo/demo123)
+                  </button>
+                  {loginError && (
+                    <p style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                      {loginError}
+                    </p>
+                  )}
+                  <ul style={{ marginTop: '1.5rem' }}>
+                    <li>Custom signer functions</li>
+                    <li>JWT token authentication</li>
+                    <li>User-isolated storage</li>
+                    <li>Secure API endpoints</li>
+                  </ul>
+                </>
+              ) : (
+                <>
+                  <p style={{ color: '#10b981', marginBottom: '1rem' }}>✓ Authenticated as demo</p>
+                  <button onClick={handleLogout} className="reset-button" style={{ fontSize: '0.9rem' }}>
+                    Logout
+                  </button>
+                  <ul style={{ marginTop: '1.5rem' }}>
+                    <li>Custom signer functions</li>
+                    <li>JWT token in headers</li>
+                    <li>Files stored in users/{'{userId}'}/</li>
+                    <li>Protected endpoints</li>
+                  </ul>
+                </>
+              )}
+              <h3 style={{ marginTop: '1.5rem' }}>Requirements</h3>
+              <ul>
+                <li>MinIO: <code>docker-compose up -d</code></li>
+                <li>Auth Server: <code>cd examples/server/node-express-auth && npm start</code></li>
+              </ul>
             </>
           )}
         </div>
