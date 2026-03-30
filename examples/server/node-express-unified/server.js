@@ -54,7 +54,7 @@ function authenticateToken(req, res, next) {
 
 // Login endpoint - generate JWT token
 app.post('/api/auth/login', (req, res) => {
-  const { username, password } = req.query.body;
+  const { username, password } = req.body;
 
   // Simple auth (in production, verify against database)
   if (username === 'demo' && password === 'demo123') {
