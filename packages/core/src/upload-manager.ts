@@ -138,35 +138,44 @@ export class UploadManager {
       const abortController = createAbortController();
       this.abortControllers.set(taskId, abortController);
 
-      const signedUrlResult = await withRetry(
-        () =>
-          this.provider.getSignedUrl({
-            fileName,
-            contentType,
-            fileSize: task.file.size,
-            metadata: task.metadata,
-            path: this.config.path,
-          }),
-        this.config.retry,
-        { taskId }
-      );
+      // Check if file size exceeds multipart threshold
+      const shouldUseMultipart = task.file.size > this.config.multipartThreshold;
 
-      task = updateTaskStatus(task, 'uploading');
-      this.tasks.set(taskId, task);
+      if (shouldUseMultipart) {
+        // Use multipart upload for large files
+        await this.executeMultipartUpload(task, fileName, contentType, abortController.signal);
+      } else {
+        // Use single upload for small files
+        const signedUrlResult = await withRetry(
+          () =>
+            this.provider.getSignedUrl({
+              fileName,
+              contentType,
+              fileSize: task.file.size,
+              metadata: task.metadata,
+              path: this.config.path,
+            }),
+          this.config.retry,
+          { taskId }
+        );
 
-      await this.uploadFile(task, signedUrlResult.signedUrl, abortController.signal);
+        task = updateTaskStatus(task, 'uploading');
+        this.tasks.set(taskId, task);
 
-      const result: UploadResult = {
-        url: signedUrlResult.publicUrl,
-        key: signedUrlResult.key,
-        fileName: task.file.name,
-        fileSize: task.file.size,
-        contentType,
-      };
+        await this.uploadFile(task, signedUrlResult.signedUrl, abortController.signal);
 
-      task = updateTaskResult(task, result);
-      this.tasks.set(taskId, task);
-      this.emitter.emit('upload:success', { task, result });
+        const result: UploadResult = {
+          url: signedUrlResult.publicUrl,
+          key: signedUrlResult.key,
+          fileName: task.file.name,
+          fileSize: task.file.size,
+          contentType,
+        };
+
+        task = updateTaskResult(task, result);
+        this.tasks.set(taskId, task);
+        this.emitter.emit('upload:success', { task, result });
+      }
     } catch (error) {
       if (isAbortError(error)) {
         task = updateTaskStatus(task, 'aborted');
@@ -189,6 +198,151 @@ export class UploadManager {
     } finally {
       this.abortControllers.delete(taskId);
     }
+  }
+
+  private async executeMultipartUpload(
+    task: UploadTask,
+    fileName: string,
+    contentType: string,
+    signal: AbortSignal
+  ): Promise<void> {
+    const taskId = task.id;
+    
+    // Initiate multipart upload
+    const initResult = await withRetry(
+      () =>
+        this.provider.initiateMultipart({
+          fileName,
+          contentType,
+          fileSize: task.file.size,
+          metadata: task.metadata,
+          path: this.config.path,
+        }),
+      this.config.retry,
+      { taskId }
+    );
+
+    const { uploadId, key } = initResult;
+    const chunkSize = this.config.chunkSize;
+    const totalParts = Math.ceil(task.file.size / chunkSize);
+    const uploadedParts: Array<{ partNumber: number; etag: string }> = [];
+
+    try {
+      task = updateTaskStatus(task, 'uploading');
+      this.tasks.set(taskId, task);
+
+      // Upload parts
+      for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
+        if (signal.aborted) {
+          throw new Error('Upload aborted');
+        }
+
+        const start = (partNumber - 1) * chunkSize;
+        const end = Math.min(start + chunkSize, task.file.size);
+        const chunk = task.file.slice(start, end);
+
+        // Get signed URL for this part
+        const partSignedUrl = await withRetry(
+          () =>
+            this.provider.getPartSignedUrl({
+              uploadId,
+              key,
+              partNumber,
+              contentLength: chunk.size,
+            }),
+          this.config.retry,
+          { taskId }
+        );
+
+        // Upload the part
+        const etag = await this.uploadPart(chunk, partSignedUrl.signedUrl, signal);
+        uploadedParts.push({ partNumber, etag });
+
+        // Update progress
+        const progress: UploadProgress = {
+          loaded: end,
+          total: task.file.size,
+          percent: Math.round((end / task.file.size) * 100),
+          speed: 0,
+          estimatedTimeRemaining: 0,
+        };
+
+        const updatedTask = updateTaskProgress(task, progress);
+        this.tasks.set(taskId, updatedTask);
+        this.emitter.emit('upload:progress', { task: updatedTask, progress });
+      }
+
+      // Complete multipart upload
+      task = updateTaskStatus(task, 'completing');
+      this.tasks.set(taskId, task);
+
+      const completeResult = await withRetry(
+        () =>
+          this.provider.completeMultipart({
+            uploadId,
+            key,
+            parts: uploadedParts,
+          }),
+        this.config.retry,
+        { taskId }
+      );
+
+      const result: UploadResult = {
+        url: completeResult.publicUrl,
+        key: completeResult.key,
+        fileName: task.file.name,
+        fileSize: task.file.size,
+        contentType,
+      };
+
+      task = updateTaskResult(task, result);
+      this.tasks.set(taskId, task);
+      this.emitter.emit('upload:success', { task, result });
+    } catch (error) {
+      // Abort multipart upload on error
+      try {
+        await this.provider.abortMultipart({ uploadId, key });
+      } catch (abortError) {
+        console.error('Failed to abort multipart upload:', abortError);
+      }
+      throw error;
+    }
+  }
+
+  private async uploadPart(chunk: Blob, signedUrl: string, signal: AbortSignal): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const etag = xhr.getResponseHeader('ETag');
+          if (etag) {
+            resolve(etag.replace(/"/g, ''));
+          } else {
+            reject(new Error('No ETag in response'));
+          }
+        } else {
+          reject(new Error(`Part upload failed with status ${xhr.status}`));
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        reject(new Error('Part upload failed'));
+      });
+
+      xhr.addEventListener('abort', () => {
+        const error = new Error('Part upload aborted');
+        error.name = 'AbortError';
+        reject(error);
+      });
+
+      signal.addEventListener('abort', () => {
+        xhr.abort();
+      });
+
+      xhr.open('PUT', signedUrl);
+      xhr.send(chunk);
+    });
   }
 
   private async uploadFile(task: UploadTask, signedUrl: string, signal: AbortSignal): Promise<void> {
