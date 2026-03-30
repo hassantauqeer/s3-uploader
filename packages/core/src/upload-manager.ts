@@ -191,6 +191,11 @@ export class UploadManager {
   }
 
   private async uploadFile(task: UploadTask, signedUrl: string, signal: AbortSignal): Promise<void> {
+    // If using mock provider, simulate upload without real HTTP request
+    if (signedUrl.includes('mock-bucket.s3.amazonaws.com') || signedUrl.includes('signature=mock')) {
+      return this.simulateMockUpload(task, signal);
+    }
+
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
 
@@ -251,6 +256,55 @@ export class UploadManager {
       });
 
       xhr.send(task.file);
+    });
+  }
+
+  private async simulateMockUpload(task: UploadTask, signal: AbortSignal): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const fileSize = task.file.size;
+      const chunkSize = 100000; // 100KB chunks for smooth progress
+      const uploadSpeed = 1_000_000; // 1MB/s simulated speed
+      const totalChunks = Math.ceil(fileSize / chunkSize);
+      let uploadedChunks = 0;
+
+      const uploadChunk = () => {
+        if (signal.aborted) {
+          const error = new Error('Upload aborted');
+          error.name = 'AbortError';
+          reject(error);
+          return;
+        }
+
+        if (uploadedChunks >= totalChunks) {
+          resolve();
+          return;
+        }
+
+        uploadedChunks++;
+        const loaded = Math.min(uploadedChunks * chunkSize, fileSize);
+        const progress: UploadProgress = {
+          loaded,
+          total: fileSize,
+          percent: Math.round((loaded / fileSize) * 100),
+          speed: uploadSpeed,
+          estimatedTimeRemaining: Math.round(((fileSize - loaded) / uploadSpeed) * 1000),
+        };
+
+        const updatedTask = updateTaskProgress(task, progress);
+        this.tasks.set(task.id, updatedTask);
+        this.emitter.emit('upload:progress', { task: updatedTask, progress });
+
+        const delay = (chunkSize / uploadSpeed) * 1000;
+        setTimeout(uploadChunk, delay);
+      };
+
+      signal.addEventListener('abort', () => {
+        const error = new Error('Upload aborted');
+        error.name = 'AbortError';
+        reject(error);
+      });
+
+      uploadChunk();
     });
   }
 
