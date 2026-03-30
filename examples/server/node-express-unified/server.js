@@ -138,9 +138,9 @@ app.post('/api/s3/multipart/initiate', async (req, res) => {
 });
 
 // Public: Multipart upload - Sign part
-app.get('/api/s3/multipart/sign-part', async (req, res) => {
+app.post('/api/s3/multipart/sign-part', async (req, res) => {
   try {
-    const { uploadId, key, partNumber } = req.query;
+    const { uploadId, key, partNumber } = req.body;
 
     if (!uploadId || !key || !partNumber) {
       return res.status(400).json({ error: 'uploadId, key, and partNumber are required' });
