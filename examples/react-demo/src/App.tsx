@@ -42,6 +42,8 @@ function App() {
     return createS3Provider({
       signer: async (_file, params) => {
         const token = authTokenRef.current;
+        console.log('Signer called, token from ref:', token);
+        console.log('authTokenRef:', authTokenRef);
         const response = await fetch('http://localhost:3001/api/auth/s3/sign', {
           method: 'POST',
           headers: {
@@ -131,8 +133,8 @@ function App() {
   const protectedUpload = useUpload({
     provider: protectedProvider,
     validation: {
-      maxFileSize: 10 * 1024 * 1024, // 10MB
-      allowedTypes: ['image/*', 'application/pdf'],
+      maxFileSize: 10 * 1024 * 1024 * 1024, // 10GB
+      allowedTypes: ['image/*', 'application/pdf', 'video/*', '*'],
     },
   });
 

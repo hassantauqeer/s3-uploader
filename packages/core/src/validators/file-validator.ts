@@ -70,10 +70,16 @@ export async function validateFile(
 
 function isTypeAllowed(fileType: string, allowedTypes: string[]): boolean {
   return allowedTypes.some((allowed) => {
+    // Wildcard '*' allows all file types
+    if (allowed === '*') {
+      return true;
+    }
+    // Pattern like 'image/*' matches 'image/png', 'image/jpeg', etc.
     if (allowed.endsWith('/*')) {
       const prefix = allowed.slice(0, -2);
       return fileType.startsWith(prefix + '/');
     }
+    // Exact match like 'application/pdf'
     return fileType === allowed;
   });
 }
