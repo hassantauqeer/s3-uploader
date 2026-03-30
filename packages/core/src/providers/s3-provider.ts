@@ -91,6 +91,40 @@ export function createS3Provider(config: S3ProviderConfig): UploadProvider {
     return response;
   }
 
+  // Multipart requests always use POST
+  async function makeMultipartRequest(
+    url: string,
+    params?: Record<string, unknown>
+  ): Promise<Response> {
+    const headers = typeof config.signingHeaders === 'function' 
+      ? config.signingHeaders() 
+      : config.signingHeaders ?? {};
+
+    headers['Content-Type'] = 'application/json';
+
+    const body = JSON.stringify({
+      ...config.signingParams,
+      ...params,
+    });
+
+    const response = await requestFn(url, {
+      method: 'POST',
+      headers,
+      body,
+      credentials: config.withCredentials ? 'include' : 'same-origin',
+    });
+
+    if (!response.ok) {
+      throw new UploadError(
+        `Multipart request failed: ${response.statusText}`,
+        'SIGNING_ERROR',
+        { statusCode: response.status, retryable: response.status >= 500 }
+      );
+    }
+
+    return response;
+  }
+
   return {
     async getSignedUrl(params: SignedUrlParams): Promise<SignedUrlResult> {
       // Use custom signer if provided
@@ -151,7 +185,7 @@ export function createS3Provider(config: S3ProviderConfig): UploadProvider {
         );
       }
 
-      const response = await makeSigningRequest(`${multipartUrl}/initiate`, {
+      const response = await makeMultipartRequest(`${multipartUrl}/initiate`, {
         fileName: params.fileName,
         contentType: params.contentType,
         fileSize: params.fileSize,
@@ -191,7 +225,7 @@ export function createS3Provider(config: S3ProviderConfig): UploadProvider {
         );
       }
 
-      const response = await makeSigningRequest(`${multipartUrl}/sign-part`, {
+      const response = await makeMultipartRequest(`${multipartUrl}/sign-part`, {
         uploadId: params.uploadId,
         key: params.key,
         partNumber: params.partNumber,
@@ -231,7 +265,7 @@ export function createS3Provider(config: S3ProviderConfig): UploadProvider {
         );
       }
 
-      const response = await makeSigningRequest(`${multipartUrl}/complete`, {
+      const response = await makeMultipartRequest(`${multipartUrl}/complete`, {
         uploadId: params.uploadId,
         key: params.key,
         parts: params.parts,
@@ -270,7 +304,7 @@ export function createS3Provider(config: S3ProviderConfig): UploadProvider {
         );
       }
 
-      await makeSigningRequest(`${multipartUrl}/abort`, {
+      await makeMultipartRequest(`${multipartUrl}/abort`, {
         uploadId: params.uploadId,
         key: params.key,
       });
