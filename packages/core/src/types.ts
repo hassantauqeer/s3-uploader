@@ -4,7 +4,7 @@ export interface UploadProvider {
   getPartSignedUrl(params: PartSignedUrlParams): Promise<SignedUrlResult>;
   completeMultipart(params: CompleteMultipartParams): Promise<CompleteMultipartResult>;
   abortMultipart(params: AbortMultipartParams): Promise<void>;
-  
+
   // Optional configuration that can override defaults
   multipartThreshold?: number;
   chunkSize?: number;
@@ -27,24 +27,12 @@ export interface SignedUrlResult {
 }
 
 // Custom signer function types for flexible auth
-export type SignerFunction = (
-  file: File,
-  params: SignedUrlParams
-) => Promise<SignedUrlResult>;
+export type SignerFunction = (file: File, params: SignedUrlParams) => Promise<SignedUrlResult>;
 
 export interface MultipartSignerFunctions {
-  initiate: (
-    file: File,
-    params: InitiateMultipartParams
-  ) => Promise<MultipartInitResult>;
-  signPart: (
-    file: File,
-    params: PartSignedUrlParams
-  ) => Promise<SignedUrlResult>;
-  complete: (
-    file: File,
-    params: CompleteMultipartParams
-  ) => Promise<CompleteMultipartResult>;
+  initiate: (file: File, params: InitiateMultipartParams) => Promise<MultipartInitResult>;
+  signPart: (file: File, params: PartSignedUrlParams) => Promise<SignedUrlResult>;
+  complete: (file: File, params: CompleteMultipartParams) => Promise<CompleteMultipartResult>;
   abort: (file: File, params: AbortMultipartParams) => Promise<void>;
 }
 
@@ -126,7 +114,6 @@ export interface ValidationConfig {
   allowedTypes?: string[];
   blockedTypes?: string[];
   allowedExtensions?: string[];
-  maxFiles?: number;
   custom?: (file: File) => string | null | Promise<string | null>;
   image?: ImageValidationConfig;
 }

@@ -21,9 +21,16 @@ header p {
 
 .mode-selector {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
-  justify-content: center;
+  justify-content: start;
   margin-bottom: 2rem;
+}
+.task-section {
+  margin-top: 2rem;
+  & .completed {
+    color: #10b981;
+  }
 }
 
 .mode-button {
@@ -69,7 +76,9 @@ main {
   font-size: 1.1rem;
   border-radius: 8px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .upload-button:hover:not(:disabled) {

@@ -388,8 +388,6 @@ export interface ValidationConfig {
   blockedTypes?: string[];
   /** Allowed file extensions. e.g. ['.jpg', '.png', '.pdf'] */
   allowedExtensions?: string[];
-  /** Maximum number of files in a batch upload. Default: no limit. */
-  maxFiles?: number;
   /** Custom validation function. Return null if valid, or an error message string. */
   custom?: (file: File) => string | null | Promise<string | null>;
   /** Image-specific validation (only checked for image/* MIME types) */
